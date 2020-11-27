@@ -5,6 +5,7 @@ import Modal from 'react-modal';
 import FileViewer from 'react-file-viewer';
 import ModalStyle from './helper/ModalStyles.json'
 import * as fs from 'fs';
+import axios from 'axios';
 import style from './style.module.scss';
 
 export function CustomHeaderTemplate(props) {
@@ -255,19 +256,12 @@ export function CustomUploadFieldTemplate(props) {
     Modal.setAppElement("#root");
 
     useEffect(() => {
-        // axios.get("file/upload/").then(response => {
-        //     setLoading(false);
-        //     setFileList(response.data);
-        // });
-        fs.readdir('../../public/uploads',(err,files)=>{
-            if (err){
-                console.log(err)
-            }
-            files.forEach(file => {
-              console.log(file);
-            });
+        axios.get("https://powerful-brushlands-46492.herokuapp.com/").then(response => {
+            console.log(response);
+            setLoading(false);
+            // setFileList(response.data);
+            setFileList("");
         });
-        console.log("should get file from uploads");
         setLoading(false);
     }, [isLoading]);
 

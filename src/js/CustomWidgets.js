@@ -5,7 +5,7 @@ import {XIcon} from '@primer/octicons-react'
 import 'bootstrap';
 import style from './style.module.scss';
 // import './style.module.scss';
-// import axios from 'axios';
+import axios from 'axios';
 
 /**
  * This is the custom widget for single input field

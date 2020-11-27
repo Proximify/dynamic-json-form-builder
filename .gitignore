@@ -25,5 +25,4 @@ yarn-error.log*
 # OS
 .idea
 .eslintcache
-./public/uploads/*
-!/public/uploads
+/public/uploads
