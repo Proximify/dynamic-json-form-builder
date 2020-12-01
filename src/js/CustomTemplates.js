@@ -2,16 +2,16 @@ import React, {useEffect, useState} from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import {PlusCircleIcon, PencilIcon, XIcon} from '@primer/octicons-react'
 import Modal from 'react-modal';
+import style from './style.module.scss';
 import FileViewer from 'react-file-viewer';
 import ModalStyle from './helper/ModalStyles.json'
-import * as fs from 'fs';
-import axios from 'axios';
-import style from './style.module.scss';
+import api from './helper/api';
+
 
 export function CustomHeaderTemplate(props) {
     const {id, label, children, description, errors, help, required} = props;
     return (
-        <div className={`form-group row justify-content-center`} >
+        <div className={`form-group row justify-content-center`}>
             <div className="col-lg-12 col-md-12 col-11 my-3">
                 {children}
             </div>
@@ -26,13 +26,17 @@ export function CustomHeaderTemplate(props) {
  * @constructor
  */
 export function CustomFieldTemplate(props) {
-    const {id, label, children, description, errors, help, required} = props;
+    const {id, label, children, description, errors, help, required, rawErrors} = props;
+    console.log("CustomFieldTemplate", props);
     return (
         <div className="form-group row justify-content-center mx-auto my-xl-3 my-lg-3 my-md-2 my-sm-2 my-0">
             <label htmlFor={id}
                    className="col-lg-4 col-md-3 col-sm-3 col-10 col-form-label">{label}{required ? "*" : null}</label>
             <div className="col-lg-8 col-md-9 col-sm-9 col-10">
                 {children}
+                {rawErrors ? rawErrors.map((error, index) => {
+                    return (<li className={style.msgError} key={index}>{error}</li>)
+                }) : null}
             </div>
         </div>
     );
@@ -51,7 +55,7 @@ export function CustomArrayFieldTemplate(props) {
     const [isAddNew, setIsAddNew] = useState(false);
     const [currentData, setCurrentData] = useState(null);
     const {title, items, canAdd, onAddClick, help, required, formData} = props;
-    console.log("ArrayFiledTemplate", props);
+    // console.log("ArrayFiledTemplate", props);
     // console.log("isOpen", isOpen, "itemIndex", itemIndex, "isAddNew", isAddNew)
     Modal.setAppElement("#root");
 
@@ -244,24 +248,31 @@ export function CustomArrayFieldTemplate(props) {
  * @constructor
  */
 export function CustomUploadFieldTemplate(props) {
-    //console.log("CustomUploadFieldTemplate", props);
+    console.log("CustomUploadFieldTemplate", props);
     const {id, label, children, description, errors, help, required, title} = props;
 
     const [isAddOpen, setIsAddOpen] = useState(false);
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isLoading, setLoading] = useState(true);
-    const [fileList, setFileList] = useState("");
+    const [fileList, setFileList] = useState(null);
     const [selectedFile, setSelectedFile] = useState(null);
 
     Modal.setAppElement("#root");
 
     useEffect(() => {
-        axios.get("https://powerful-brushlands-46492.herokuapp.com/").then(response => {
-            console.log(response);
-            setLoading(false);
-            // setFileList(response.data);
-            setFileList("");
-        });
+        // axios.get("https://powerful-brushlands-46492.herokuapp.com/").then(response => {
+        //     console.log(response);
+        //     setLoading(false);
+        //     // setFileList(response.data);
+        //     setFileList("");
+        // });
+        api.get("file/").then(res => {
+            console.log("res", res);
+            setFileList(res.data.data)
+        }).catch(err => {
+            console.log("err", err);
+            setFileList(null);
+        })
         setLoading(false);
     }, [isLoading]);
 
@@ -295,7 +306,7 @@ export function CustomUploadFieldTemplate(props) {
                         <button className={"btn btn-outline-secondary mr-2 mt-3"}
                                 onClick={(e) => {
                                     setLoading(true)
-                                    setFileList("")
+                                    setFileList(null)
                                     setIsAddOpen(false)
                                 }}>Cancel
                         </button>
@@ -303,7 +314,7 @@ export function CustomUploadFieldTemplate(props) {
                                 onClick={(e) => {
                                     setIsAddOpen(false)
                                     setLoading(true)
-                                    setFileList("")
+                                    setFileList(null)
                                 }}>Save
                         </button>
                     </div>
@@ -356,9 +367,9 @@ export function CustomUploadFieldTemplate(props) {
         //     console.log(err)
         // })
         console.log("should delete file nd then get file uploads");
-            setLoading(true);
-            setFileList("");
-            setIsAddOpen(false);
+        setLoading(true);
+        setFileList(null);
+        setIsAddOpen(false);
     }
 
     return (
@@ -372,7 +383,7 @@ export function CustomUploadFieldTemplate(props) {
                     size={16}/></button>
                 <div>
                     <ul className={"list-group"}>
-                        {fileList !== "" ? fileList.split(" ").map((element, index) => {
+                        {fileList ? fileList.map((element, index) => {
                             return (
                                 <li className={"list-group-item p-1"} key={index}>
                                     <div className={"row"}>
@@ -394,7 +405,7 @@ export function CustomUploadFieldTemplate(props) {
                                     </div>
                                 </li>
                             )
-                        }) : ""}
+                        }) : null}
                     </ul>
                 </div>
                 <div id={`${title}_add_modal`}>

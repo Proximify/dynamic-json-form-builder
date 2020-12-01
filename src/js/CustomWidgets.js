@@ -14,7 +14,8 @@ import axios from 'axios';
  * @constructor
  */
 export function TextInputWidget(props) {
-    //console.log("TextInputWidget", props);
+    console.log("TextInputWidget", props);
+    const [value, setValue] = useState(props.value);
     return (
         <div className="my-auto">
             {/*<label htmlFor={props.schema.id} className="col-sm-2 col-form-label my-auto">{props.schema.title}{props.required ? "*" : null}</label>*/}
@@ -22,10 +23,23 @@ export function TextInputWidget(props) {
                 className={"col-lg-12 col-sm-12 form-control"}
                 type="text"
                 id={props.schema.id}
-                value={props.value ?? ""}
+                value={value ?? ""}
                 required={props.required}
-                onChange={(event) =>
-                    props.onChange(event.target.value)
+                onChange={(event) => {
+                    if (!props.rawErrors || props.rawErrors.length === 0) {
+                        // console.log("a");
+                        setValue(event.target.value);
+                    } else {
+                        // console.log("b");
+                        setValue(event.target.value);
+
+                        props.onChange(event.target.value)
+                    }
+                    // console.log("c");
+
+                }}
+                onBlur={(event) =>
+                    props.onChange(value)
                 }
             />
         </div>
@@ -39,7 +53,7 @@ export function TextInputWidget(props) {
  * @constructor
  */
 export function MultiLangTextInputWidget(props) {
-    console.log("MultiLangTextInputWidget", props);
+    // console.log("MultiLangTextInputWidget", props);
     const [deletedContent, setDeletedContent] = useState();
     let currentLanguage = "EN";
 
@@ -224,7 +238,7 @@ export function MultiLangTextInputWidget(props) {
             <div>
                 <a className={`btn ${style.btnUndo} ${!deletedContent ? "d-none" : ""}`}
                    onClick={() => {
-                       handleChange({content:deletedContent}, "Bilingual");
+                       handleChange({content: deletedContent}, "Bilingual");
                    }}>undo</a>
             </div>
         </div>
@@ -238,7 +252,7 @@ export function MultiLangTextInputWidget(props) {
  * @constructor
  */
 export function SingleSelectWidget(props) {
-    console.log("SelectorWidget", props);
+    // console.log("SelectorWidget", props);
     const {options, onChange, value} = props;
 
     const handleChange = (value) => {
@@ -274,7 +288,7 @@ export function SingleSelectWidget(props) {
  * @constructor
  */
 export function WindowedSelectorWidget(props) {
-    console.log("WindowedSelectorWidget", props);
+    // console.log("WindowedSelectorWidget", props);
     const {options, onChange, value} = props;
 
     const handleChange = (value) => {

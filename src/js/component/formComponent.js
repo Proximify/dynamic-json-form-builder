@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
-import ReactDOM from 'react-dom';
 import Form from "@rjsf/core";
 import 'bootstrap/dist/css/bootstrap.css';
-import FormData from '../../data/formData.json'
-import FormSchema from '../../data/formSchema.json';
+import api from '../helper/api';
 
 import {
     MultiColSelectorWidget,
@@ -21,6 +19,7 @@ import {
     testArrayFieldTemplate
 } from "../CustomTemplates";
 import generateUISchema from "../helper/UISchemaGenerator";
+import formValidatorGenerator from '../helper/FormValidatorGenerator';
 
 const customWidgets = {
     multiColSelectorWidget: MultiColSelectorWidget,
@@ -99,58 +98,128 @@ const uiSchema = {
     }
 };
 
-/**
- * This is the validator for the form data
- * @param formData
- * @param errors
- * @returns {*}
- */
-function validate(formData, errors) {
-    if (formData.name === null || formData.name === "") {
-        errors.name.addError("is a required property");
-    }
-    return errors;
-}
-
-/**
- * This function handle the form submit event
- * @param data
- */
-const onFormSubmit = (data) => {
-    console.log(data)
-    // axios.post(`form/`, {
-    //     formData: data
-    // })
-    //     .then(response => {
-    //         alert('FormData has been modified');
-    //     })
-}
-
 class FormComponent extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
+        this.state = {
+            isLoaded: false,
+            loadingError: null,
+            FormSchema: null,
+            FormData: undefined,
+            FormID: null,
+            validation: null,
+            HTTPMethod: null,
+        };
+    }
+
+    componentDidMount() {
+        if (!this.props.resourceURL) {
+            this.setState({
+                isLoaded: true,
+                loadingError: "No form resource url provided"
+            })
+        } else if (!this.props.HTTPMethod || (this.props.HTTPMethod.toLowerCase() !== "post" && this.props.HTTPMethod.toLowerCase() !== "put" && this.props.HTTPMethod.toLowerCase() !== "patch")) {
+            this.setState({
+                isLoaded: true,
+                loadingError: `No/Invalid HTTP method provided, expect 'POST','PUT','PATCH', given: ${this.props.HTTPMethod ?? "nothing"}`
+            })
+        } else {
+            api.get(this.props.resourceURL).then(res => {
+                const validationDeclaration = this.props.validationDeclaration;
+                this.setState({
+                    isLoaded: true,
+                    FormSchema: res.data.formSchema,
+                    FormData: res.data.formData ?? undefined,
+                    FormID: this.props.formID ?? "form",
+                    validation: function (formData, errors) {
+                        formValidatorGenerator(res.data.formSchema, formData, errors, validationDeclaration);
+                        return errors;
+                    },
+                    HTTPMethod: this.props.HTTPMethod
+                })
+            }).catch(err => {
+                this.setState({
+                    isLoaded: true,
+                    loadingError: err.message
+                })
+            })
+        }
+    }
+
+    /**
+     * This function handle the form submit event
+     * @param data
+     */
+    onFormSubmit = (data) => {
+        console.log(data);
+        //document.getElementById(`${this.props.FormID}-errorMsg`).innerHTML = "";
+        this.onErrorMsgChange(null);
+
+        api[this.state.HTTPMethod.toLowerCase()](this.props.resourceURL + 'submit', data)
+            .then(res => {
+                console.log(res);
+            }).catch(err => {
+            console.log(err);
+        })
+    }
+
+    onErrorMsgChange = (errors) => {
+        const errorMsgDiv = document.getElementById(`${this.state.FormID}-errorMsg`);
+        if (!errorMsgDiv)
+            return;
+        if (errors) {
+            const errorList = errors.map(err => Object.values(err));
+            errorList.forEach(err => {
+                console.log(err)
+                let errorMsg = document.createElement("div");
+                errorMsg.className += "alert alert-danger";
+                errorMsg.role = "alert";
+                errorMsg.innerHTML = err;
+                errorMsgDiv.appendChild(errorMsg);
+            })
+        } else {
+            errorMsgDiv.innerHTML = "";
+        }
     }
 
     render() {
-        //const uiSchema = generateUISchema(window.schema);
-        console.log("FormComponent", this.props);
-        return (
-            <div className={"container"}>
-                <div className={"row d-flex justify-content-center"}>
-                    <div className={"col-xl-5 col-lg-5 col-md-7 col-sm-10 col-12"}>
-                        <Form
-                            schema={FormSchema}
-                            uiSchema={uiSchema}
-                            formData={FormData}
-                            widgets={customWidgets}
-                            validate={validate}
-                            onSubmit={({formData}) => onFormSubmit(formData)}>
-                        </Form>
+        const {isLoaded, loadingError, FormSchema, FormData, FormID, validation} = this.state;
+        if (loadingError) {
+            return <h3>Loading Error: {loadingError}</h3>;
+        } else if (!isLoaded) {
+            return <div>Loading...</div>;
+        } else {
+            return (
+                <div className={"container"}>
+                    <div className={"row d-flex justify-content-center"}>
+                        <div className={"col-xl-5 col-lg-5 col-md-7 col-sm-10 col-12"}>
+                            <Form
+                                id={FormID}
+                                schema={FormSchema}
+                                uiSchema={uiSchema}
+                                formData={FormData}
+                                widgets={customWidgets}
+                                showErrorList={false}
+                                liveValidate
+                                validate={validation}
+                                onError={(errors) => {
+                                    this.onErrorMsgChange(errors);
+                                }}
+                                onSubmit={({formData}) => this.onFormSubmit(formData)}>
+                                <div className={"container"}>
+                                    <div id={`${FormID}-errorMsg`}>
+                                    </div>
+                                    <div>
+                                        <button className={"btn btn-info"} type="submit">Submit</button>
+                                        <button className={"btn btn-secondary"} type="button">Cancel</button>
+                                    </div>
+                                </div>
+                            </Form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        );
+            );
+        }
     }
 }
 
