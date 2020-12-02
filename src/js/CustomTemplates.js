@@ -7,14 +7,21 @@ import FileViewer from 'react-file-viewer';
 import ModalStyle from './helper/ModalStyles.json'
 import api from './helper/api';
 import FileDownload from 'js-file-download';
+import { Consumer } from './helper/context';
+
 
 Modal.setAppElement("#root");
 
 export function CustomHeaderTemplate(props) {
     const {id, label, children, description, errors, help, required} = props;
+    console.log(props)
     return (
         <div className={`form-group row justify-content-center`}>
             <div className="col-lg-12 col-md-12 col-11 my-3">
+                <Consumer>{
+                    ({globalLanguage}) => <h5>Global Language: {globalLanguage}</h5>
+                }
+                </Consumer>
                 {children}
             </div>
         </div>
@@ -264,7 +271,7 @@ export function CustomUploadFieldTemplate(props) {
                         {/*            setState({...state, isLoading: true, fileList: null, isUploadModalOpen: false});*/}
                         {/*        }}>Cancel*/}
                         {/*</button>*/}
-                        <button className={"btn btn-outline-primary mt-3"}
+                        <button className={"btn btn-outline-secondary mt-3"}
                                 onClick={() => {
                                     setState({...state, isLoading: true, fileList: null, isUploadModalOpen: false});
                                 }}>Close

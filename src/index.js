@@ -1,7 +1,10 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
+import {Provider} from './js/helper/context';
 import 'bootstrap/dist/css/bootstrap.css';
 import Form from './js/component/formComponent'
+
+const context = {globalLanguage: 'EN'};
 
 class App extends Component {
     constructor(props) {
@@ -44,12 +47,14 @@ class App extends Component {
 
     render() {
         return (
-            <Form
-                formID={"user-profile-form"}
-                resourceURL={"form/"}
-                validationDeclaration={this.validationDeclaration}
-                HTTPMethod={"PATCH"}
+            <Provider value={context}>
+                <Form
+                    formID={"user-profile-form"}
+                    resourceURL={"form/"}
+                    validationDeclaration={this.validationDeclaration}
+                    HTTPMethod={"PATCH"}
                 />
+            </Provider>
         );
     }
 }
