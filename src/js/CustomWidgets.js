@@ -443,7 +443,9 @@ export function FileInputWidget(props) {
     }
 
     const onClickHandler = () => {
-        const data = new FormData()
+        if (!selectedFiles)
+            return ;
+        const data = new FormData();
         for (let x = 0; x < selectedFiles.length; x++) {
             data.append('files', selectedFiles[x])
         }
@@ -453,10 +455,10 @@ export function FileInputWidget(props) {
             },
         })
             .then(res => { // then print response status
-                toast.success('upload success')
+                toast.success('upload success');
             })
             .catch(err => { // then print response status
-                toast.error('upload fail')
+                toast.error('upload fail');
             })
     }
 
@@ -469,7 +471,7 @@ export function FileInputWidget(props) {
             </div>
             <div className={"row mt-1"}>
                 <ToastContainer/>
-                <div className={"progress"} style={{width: '50%', height: '10px'}}>
+                <div className={`progress ${selectedFiles ? "visible" : "invisible"}`} style={{width: '26%', height: '10px'}}>
                     <div className={"progress-bar progress-bar-striped progress-bar-animated"} role={"progressbar"}
                          style={{width: `${loaded}%`}}
                          aria-valuenow={loaded} aria-valuemin="0"

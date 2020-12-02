@@ -8,6 +8,7 @@ import ModalStyle from './helper/ModalStyles.json'
 import api from './helper/api';
 import FileDownload from 'js-file-download';
 
+Modal.setAppElement("#root");
 
 export function CustomHeaderTemplate(props) {
     const {id, label, children, description, errors, help, required} = props;
@@ -51,14 +52,11 @@ export function CustomFieldTemplate(props) {
  */
 // TODO: need refactor delete and add
 export function CustomArrayFieldTemplate(props) {
+    const {title, items, canAdd, onAddClick, help, required, formData} = props;
     const [isOpen, setIsOpen] = useState(false);
     const [itemIndex, setItemIndex] = useState(-1);
     const [isAddNew, setIsAddNew] = useState(false);
     const [currentData, setCurrentData] = useState(null);
-    const {title, items, canAdd, onAddClick, help, required, formData} = props;
-    // console.log("ArrayFiledTemplate", props);
-    // console.log("isOpen", isOpen, "itemIndex", itemIndex, "isAddNew", isAddNew)
-    Modal.setAppElement("#root");
 
     // This function read the formData parsed in and extract the data and create HTML elements for each record
     const getItemList = () => {
@@ -195,49 +193,6 @@ export function CustomArrayFieldTemplate(props) {
     )
 }
 
-// export function testArrayFieldTemplate(props) {
-//     console.log("testArrayFieldTemplate", props);
-//     // const [isNeedSave, setIsNeedSave] = useState(false);
-//     const [count, setCount] = useState(0);
-//     useEffect(() => {
-//         console.log("component did mount");
-//         console.log("existed item", props.formData);
-//     }, [])
-//
-//     useEffect(() => {
-//         console.log("formData has been update");
-//         // if (props.items.length){
-//         //     // console.log(props.onAddClick.toString())
-//         //     // console.log(props.items[0].onAddIndexClick.toString())
-//         //
-//         //     //props.items[props.items.length - 1].onDropIndexClick(props.items.length - 1)
-//         //    //  let lastRecordValue = props.items[props.items.length - 1].children.props.formData;
-//         //    //  console.log(lastRecordValue)
-//         //    //  // Object.keys(lastRecordValue).forEach(key =>{
-//         //    //  //     console.log(key,lastRecordValue[key])
-//         //    //  //
-//         //    //  // })
-//         //    // props.items[0].children.props.onChange(lastRecordValue)
-//         //     //return props.items[props.items.length - 1].onAddIndexClick(props.items.length - 1);
-//         // }
-//         console.log(props.formData)
-//     }, [count])
-//
-//
-//     return (
-//         <div className={""}>
-//             {props.items.map(element => element.children)}
-//             {props.canAdd && <button type="button" onClick={props.onAddClick}>ADD</button>}
-//             <a className={"btn"} onClick={ ()=>{
-//                 let lastRecordValue = props.items[props.items.length - 1].children.props.formData;
-//                 props.items[0].children.props.onChange(lastRecordValue)
-//                 setCount(count + 1)}
-//                 //props.items[props.items.length - 1].onAddIndexClick(0)}
-//             }>Save</a>
-//         </div>
-//     );
-// }
-
 /**
  * This is the custom template for file upload field, it use React's useStare and useEffect feature that can use
  * axois.get() to get file list and display the list of file.
@@ -251,41 +206,40 @@ export function CustomArrayFieldTemplate(props) {
 // TODO: url not generic
 export function CustomUploadFieldTemplate(props) {
     console.log("CustomUploadFieldTemplate", props);
-    const {id, label, children, description, errors, help, required, title} = props;
+    const {id, label, children, required, title} = props;
 
-    const [isLoading, setLoading] = useState(true);
-    const [fileList, setFileList] = useState(null);
-    const [isAddOpen, setIsAddOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedFileIndex, setSelectedFileIndex] = useState(-1);
-
-     console.log(isLoading,fileList,isAddOpen,isEditOpen,selectedFileIndex);
-
-    Modal.setAppElement("#root");
+    const [state, setState] = useState({
+        isLoading: true,
+        fileList: null,
+        selectFileIndex: null,
+        isUploadModalOpen: false,
+        isPreviewModalOpen: false
+    })
 
     useEffect(() => {
-        console.log("isloading change")
-        if (isLoading){
+        const getFileList = () => {
             api.get("file/").then(res => {
-                // console.log("res", res);
-                setFileList(res.data.data);
-                setLoading(false);
+                const files = res.data.data;
+                setState({...state, isLoading: false, fileList: files})
             }).catch(err => {
                 console.log("err", err);
-                //setFileList(null);
-                setLoading(false);
+                setState({...state, isLoading: false})
             })
         }
-    }, [isLoading]);
+        if (state.isLoading) {
+            getFileList();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [state.isLoading]);
 
-    if (isLoading) {
+    if (state.isLoading) {
         return (
             <div className="form-group row justify-content-center mx-auto my-xl-3 my-lg-3 my-md-2 my-sm-2 my-0">
                 <label htmlFor={id}
                        className="col-lg-4 col-md-3 col-sm-3 col-10 col-form-label">{label}{required ? "*" : null}</label>
                 <div className="col-lg-8 col-md-9 col-sm-9 col-10">
                     <button type="button" className={"btn btn-light btn-link my-1"} onClick={() => {
-                        setIsAddOpen(true);
+                        setState({...state, isUploadModalOpen: true});
                     }}>< PlusCircleIcon
                         size={16}/></button>
                     <div>Loading...</div>
@@ -297,7 +251,7 @@ export function CustomUploadFieldTemplate(props) {
     const ModalAddContent = () => {
         return (
             <Modal
-                isOpen={isAddOpen}
+                isOpen={state.isUploadModalOpen}
                 contentLabel="File Add Modal"
                 id={`${title}_add_modal`}
                 style={ModalStyle.modalXS}
@@ -305,19 +259,15 @@ export function CustomUploadFieldTemplate(props) {
                 <div className={"container"}>
                     {children}
                     <div className={"d-flex justify-content-end"}>
-                        <button className={"btn btn-outline-secondary mr-2 mt-3"}
-                                onClick={(e) => {
-                                    setLoading(true)
-                                    setFileList(null)
-                                    setIsAddOpen(false)
-                                }}>Cancel
-                        </button>
+                        {/*<button className={"btn btn-outline-secondary mr-2 mt-3"}*/}
+                        {/*        onClick={() => {*/}
+                        {/*            setState({...state, isLoading: true, fileList: null, isUploadModalOpen: false});*/}
+                        {/*        }}>Cancel*/}
+                        {/*</button>*/}
                         <button className={"btn btn-outline-primary mt-3"}
-                                onClick={(e) => {
-                                    setIsAddOpen(false)
-                                    setLoading(true)
-                                    setFileList(null)
-                                }}>Save
+                                onClick={() => {
+                                    setState({...state, isLoading: true, fileList: null, isUploadModalOpen: false});
+                                }}>Close
                         </button>
                     </div>
                 </div>
@@ -326,10 +276,9 @@ export function CustomUploadFieldTemplate(props) {
     }
 
     const ModalEditContent = () => {
-
         return (
             <Modal
-                isOpen={isEditOpen}
+                isOpen={state.isPreviewModalOpen}
                 contentLabel="File Edit Modal"
                 id={`${title}_edit_modal`}
                 closeOnEscape={true}
@@ -338,14 +287,13 @@ export function CustomUploadFieldTemplate(props) {
                 <div className={"row h-100"}>
                     <div className={"col col-2"}>
                         <button className={"btn btn-outline-primary mt-2 mr-2"} onClick={() => {
-                            setIsEditOpen(false);
-                            setSelectedFileIndex(-1);
+                            setState({...state, selectFileIndex: null, isPreviewModalOpen: false});
                         }}>Close
                         </button>
                         <a href="#"
                            className={"btn btn-outline-success mt-2 mr-2"}
                            onClick={() => {
-                               handleFileDownload(selectedFileIndex);
+                               handleFileDownload(state.selectFileIndex);
                            }}
                         >Download</a>
                     </div>
@@ -353,8 +301,8 @@ export function CustomUploadFieldTemplate(props) {
                         <h2>File Content</h2>
                         <div className={"border border-secondary h-75 p-2 py-2"}>
                             <FileViewer
-                                fileType={fileList[selectedFileIndex].split('.').pop()}
-                                filePath={`http://127.0.0.1:443/file/${fileList[selectedFileIndex]}`}
+                                fileType={state.fileList[state.selectFileIndex].split('.').pop()}
+                                filePath={`http://127.0.0.1:443/file/${state.fileList[state.selectFileIndex]}`}
                             />
                         </div>
                     </div>
@@ -364,7 +312,7 @@ export function CustomUploadFieldTemplate(props) {
     }
 
     const handleFileDownload = (index) => {
-        let fileName = fileList[index];
+        let fileName = state.fileList[index];
         api.get(`/file/${fileName}`, {responseType: 'blob'}).then(res => {
             console.log(window.URL.createObjectURL(new Blob([res.data])))
 
@@ -375,12 +323,9 @@ export function CustomUploadFieldTemplate(props) {
     }
 
     const handleFileDelete = (index) => {
-        let fileName = fileList[index];
+        let fileName = state.fileList[index];
         api.delete(`/file/${fileName}`).then(res => {
-            console.log(res)
-            setLoading(true);
-            setFileList(null);
-            setIsAddOpen(false);
+            setState({...state, isLoading: true, fileList: null});
         }).catch(err => {
             console.log(err)
         })
@@ -392,12 +337,12 @@ export function CustomUploadFieldTemplate(props) {
                    className="col-lg-4 col-md-3 col-sm-3 col-10 col-form-label">{label}{required ? "*" : null}</label>
             <div className="col-lg-8 col-md-9 col-sm-9 col-10">
                 <button type="button" className={"btn btn-light btn-link my-1"} onClick={() => {
-                    setIsAddOpen(true);
+                    setState({...state, isUploadModalOpen: true});
                 }}>< PlusCircleIcon
                     size={16}/></button>
                 <div>
                     <ul className={"list-group"}>
-                        {fileList ? fileList.map((element, index) => {
+                        {state.fileList ? state.fileList.map((element, index) => {
                             return (
                                 <li className={"list-group-item p-1"} key={index}>
                                     <div className={"row"}>
@@ -405,8 +350,7 @@ export function CustomUploadFieldTemplate(props) {
                                             <p className={"m-0 d-inline-block text-truncate"}
                                                style={{maxWidth: "100%"}}
                                                onClick={(event) => {
-                                                   setSelectedFileIndex(index);
-                                                   setIsEditOpen(true);
+                                                   setState({...state, selectFileIndex: index, isPreviewModalOpen: true});
                                                }}>{element}
                                             </p>
                                         </div>
@@ -423,10 +367,10 @@ export function CustomUploadFieldTemplate(props) {
                     </ul>
                 </div>
                 <div id={`${title}_add_modal`}>
-                    {isAddOpen ? <ModalAddContent/> : null}
+                    {state.isUploadModalOpen ? <ModalAddContent/> : null}
                 </div>
                 <div id={`${title}_edit_modal`}>
-                    {isEditOpen ? <ModalEditContent/> : null}
+                    {state.isPreviewModalOpen ? <ModalEditContent/> : null}
                 </div>
             </div>
         </div>
