@@ -58,9 +58,9 @@
     },
     "content": {
       "position": "absolute",
-      "top": "40%",
-      "left": "36.5%",
-      "right": "36.5%",
+      "top": "42%",
+      "left": "360px",
+      "right": "360px",
       "bottom": "45%",
       "border": "1px solid #ccc",
       "background": "#fff",

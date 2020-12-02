@@ -4,8 +4,11 @@ import WindowedSelect from "react-windowed-select";
 import {XIcon} from '@primer/octicons-react'
 import 'bootstrap';
 import style from './style.module.scss';
-// import './style.module.scss';
 import api from './helper/api';
+import {ToastContainer, toast} from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// import './style.module.scss';
 
 /**
  * This is the custom widget for single input field
@@ -371,38 +374,111 @@ export function MultiColSelectorWidget(props) {
  * @constructor
  */
 export function FileInputWidget(props) {
-    //console.log("FileInputWidget", props);
-    let files = [];
+    console.log("FileInputWidget", props);
+    const [selectedFiles, setSelectedFiles] = useState(null);
+    const [loaded, setLoaded] = useState(0);
 
-    const handleChange = () => {
-        console.log("file has been upload, should put in uploads folder",files);
-        if (files.length > 0) {
-            const data = new FormData();
-            // for (let i = 0; i <files.length; i++){
-            //     data.append('file[]', files[i]);
-            // }
-            files.forEach(file => {
-                console.log("---",file)
-            })
-            // api.post("/file/", data, {
-            //     headers: {
-            //         'Content-Type': 'multipart/form-data'
-            //     }
-            // })
-            //     .then(res => {
-            //         console.log(res.data)
-            //     }).catch(err => {
-            //     console.log(err)
-            // })
+    const checkMimeType = (event) => {
+        //getting file object
+        let files = event.target.files
+        //define message container
+        let err = []
+        // list allow mime type
+        const types = ['application/pdf', 'text/plain', 'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ',application/vnd.ms-excel', 'image/png', 'image/jpeg', 'image/jpg']
+        // loop access array
+        for (let x = 0; x < files.length; x++) {
+            // compare file type find doesn't matach
+            // eslint-disable-next-line no-loop-func
+            if (types.every(type => files[x].type !== type)) {
+                // create error message and assign to container
+                err[x] = files[x].type + ' is not a supported format\n';
+            }
+        }
+        for (let z = 0; z < err.length; z++) {// if message not same old that mean has error
+            // discard selected file
+            toast.error(err[z])
+            event.target.value = null
+        }
+        return true;
+    }
+
+    const maxSelectFile = (event) => {
+        let files = event.target.files
+        if (files.length > 5) {
+            const msg = 'Only 5 images can be uploaded at a time'
+            event.target.value = null
+            toast.warn(msg)
+            return false;
+        }
+        return true;
+    }
+
+    const checkFileSize = (event) => {
+        let files = event.target.files
+        let size = 2000000
+        let err = [];
+        for (let x = 0; x < files.length; x++) {
+            if (files[x].size > size) {
+                err[x] = files[x].type + 'is too large, please pick a smaller file\n';
+            }
+        }
+        for (let z = 0; z < err.length; z++) {// if message not same old that mean has error
+            // discard selected file
+            toast.error(err[z])
+            event.target.value = null
+        }
+        return true;
+    }
+
+    const onChangeHandler = event => {
+        let files = event.target.files
+        if (maxSelectFile(event) && checkMimeType(event) && checkFileSize(event)) {
+            // if return true allow to setState
+            setSelectedFiles(files);
+            setLoaded(0);
         }
     }
+
+    const onClickHandler = () => {
+        const data = new FormData()
+        for (let x = 0; x < selectedFiles.length; x++) {
+            data.append('files', selectedFiles[x])
+        }
+        api.post("/file/", data, {
+            onUploadProgress: ProgressEvent => {
+                setLoaded(ProgressEvent.loaded / ProgressEvent.total * 100);
+                // this.setState({
+                //     loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
+                // })
+            },
+        })
+            .then(res => { // then print response status
+                toast.success('upload success')
+            })
+            .catch(err => { // then print response status
+                toast.error('upload fail')
+            })
+    }
+
     return (
-        <div className={"row"}>
-            <input className={"py-1"} type="file" name="file" id={`${props.id}_input`}
-                   accept={props.schema.accepts.join(",")} onChange={(event) => {
-                files = event.target.files
-            }} multiple/>
-            <a className={"btn btn-primary"} onClick={handleChange}>UPLOAD</a>
+        <div className={"container p-2"}>
+            <div className={"row"}>
+                <input className={"py-1"} type="file" name="file" id={`${props.id}_input`}
+                       accept={props.schema.accepts.join(",")} onChange={onChangeHandler} multiple/>
+                <a className={"btn btn-primary"} onClick={onClickHandler}>UPLOAD</a>
+            </div>
+            <div className={"row mt-1"}>
+                <ToastContainer/>
+                <div className={"progress"} style={{width: '50%', height: '10px'}}>
+                    <div className={"progress-bar progress-bar-striped progress-bar-animated"} role={"progressbar"} style={{width: `${loaded}%`}}
+                         aria-valuenow={loaded} aria-valuemin="0"
+                         aria-valuemax="100">{Number(loaded.toFixed(2))}%
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
