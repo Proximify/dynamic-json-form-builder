@@ -253,46 +253,39 @@ export function CustomUploadFieldTemplate(props) {
     console.log("CustomUploadFieldTemplate", props);
     const {id, label, children, description, errors, help, required, title} = props;
 
-    const [state, setState] = useState({
-        isLoading: true,
-        fileList: null,
-        selectedFileIndex: -1,
-        isAddOpen: false,
-        isEditOpen: false
-    });
+    const [isLoading, setLoading] = useState(true);
+    const [fileList, setFileList] = useState(null);
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [selectedFileIndex, setSelectedFileIndex] = useState(-1);
 
-    // const [isLoading, setLoading] = useState(true);
-    // const [fileList, setFileList] = useState(null);
-    // const [isAddOpen, setIsAddOpen] = useState(false);
-    // const [isEditOpen, setIsEditOpen] = useState(false);
-    // const [selectedFileIndex, setSelectedFileIndex] = useState(-1);
+     console.log(isLoading,fileList,isAddOpen,isEditOpen,selectedFileIndex);
 
-    console.log(state);
+    Modal.setAppElement("#root");
 
-    // Modal.setAppElement("#root");
+    useEffect(() => {
+        console.log("isloading change")
+        if (isLoading){
+            api.get("file/").then(res => {
+                // console.log("res", res);
+                setFileList(res.data.data);
+                setLoading(false);
+            }).catch(err => {
+                console.log("err", err);
+                //setFileList(null);
+                setLoading(false);
+            })
+        }
+    }, [isLoading]);
 
-    // useEffect(() => {
-    //     console.log("---")
-    //     api.get("file/").then(res => {
-    //         // console.log("res", res);
-    //         setFileList(res.data.data);
-    //         setLoading(false);
-    //     }).catch(err => {
-    //         console.log("err", err);
-    //         //setFileList(null);
-    //         setLoading(false);
-    //     })
-    // }, []);
-
-    if (state.isLoading) {
+    if (isLoading) {
         return (
             <div className="form-group row justify-content-center mx-auto my-xl-3 my-lg-3 my-md-2 my-sm-2 my-0">
                 <label htmlFor={id}
                        className="col-lg-4 col-md-3 col-sm-3 col-10 col-form-label">{label}{required ? "*" : null}</label>
                 <div className="col-lg-8 col-md-9 col-sm-9 col-10">
                     <button type="button" className={"btn btn-light btn-link my-1"} onClick={() => {
-                        // setIsAddOpen(true);
-                        setState({...state, isAddOpen: true});
+                        setIsAddOpen(true);
                     }}>< PlusCircleIcon
                         size={16}/></button>
                     <div>Loading...</div>
@@ -301,140 +294,140 @@ export function CustomUploadFieldTemplate(props) {
         );
     }
 
-    // const ModalAddContent = () => {
-    //     return (
-    //         <Modal
-    //             isOpen={isAddOpen}
-    //             contentLabel="File Add Modal"
-    //             id={`${title}_add_modal`}
-    //             style={ModalStyle.modalXS}
-    //         >
-    //             <div className={"container"}>
-    //                 {children}
-    //                 <div className={"d-flex justify-content-end"}>
-    //                     <button className={"btn btn-outline-secondary mr-2 mt-3"}
-    //                             onClick={(e) => {
-    //                                 setLoading(true)
-    //                                 setFileList(null)
-    //                                 setIsAddOpen(false)
-    //                             }}>Cancel
-    //                     </button>
-    //                     <button className={"btn btn-outline-primary mt-3"}
-    //                             onClick={(e) => {
-    //                                 setIsAddOpen(false)
-    //                                 setLoading(true)
-    //                                 setFileList(null)
-    //                             }}>Save
-    //                     </button>
-    //                 </div>
-    //             </div>
-    //         </Modal>
-    //     )
-    // }
-    //
-    // const ModalEditContent = () => {
-    //
-    //     return (
-    //         <Modal
-    //             isOpen={isEditOpen}
-    //             contentLabel="File Edit Modal"
-    //             id={`${title}_edit_modal`}
-    //             closeOnEscape={true}
-    //             style={ModalStyle.modalLR}
-    //         >
-    //             <div className={"row h-100"}>
-    //                 <div className={"col col-2"}>
-    //                     <button className={"btn btn-outline-primary mt-2 mr-2"} onClick={() => {
-    //                         setIsEditOpen(false);
-    //                         setSelectedFileIndex(-1);
-    //                     }}>Close
-    //                     </button>
-    //                     <a href="#"
-    //                        className={"btn btn-outline-success mt-2 mr-2"}
-    //                        onClick={() => {
-    //                            handleFileDownload(selectedFileIndex);
-    //                        }}
-    //                     >Download</a>
-    //                 </div>
-    //                 <div className={"col col-10"}>
-    //                     <h2>File Content</h2>
-    //                     <div className={"border border-secondary h-75 p-2 py-2"}>
-    //                         <FileViewer
-    //                             fileType={fileList[selectedFileIndex].split('.').pop()}
-    //                             filePath={`http://127.0.0.1:443/file/${fileList[selectedFileIndex]}`}
-    //                         />
-    //                     </div>
-    //                 </div>
-    //             </div>
-    //         </Modal>
-    //     )
-    // }
-    //
-    // const handleFileDownload = (index) => {
-    //     let fileName = fileList[index];
-    //     api.get(`/file/${fileName}`, {responseType: 'blob'}).then(res => {
-    //         console.log(window.URL.createObjectURL(new Blob([res.data])))
-    //
-    //         FileDownload(res.data, fileName);
-    //     }).catch(err => {
-    //         console.log(err)
-    //     })
-    // }
-    //
-    // const handleFileDelete = (index) => {
-    //     let fileName = fileList[index];
-    //     api.delete(`/file/${fileName}`).then(res => {
-    //         console.log(res)
-    //         setLoading(true);
-    //         setFileList(null);
-    //         setIsAddOpen(false);
-    //     }).catch(err => {
-    //         console.log(err)
-    //     })
-    // }
+    const ModalAddContent = () => {
+        return (
+            <Modal
+                isOpen={isAddOpen}
+                contentLabel="File Add Modal"
+                id={`${title}_add_modal`}
+                style={ModalStyle.modalXS}
+            >
+                <div className={"container"}>
+                    {children}
+                    <div className={"d-flex justify-content-end"}>
+                        <button className={"btn btn-outline-secondary mr-2 mt-3"}
+                                onClick={(e) => {
+                                    setLoading(true)
+                                    setFileList(null)
+                                    setIsAddOpen(false)
+                                }}>Cancel
+                        </button>
+                        <button className={"btn btn-outline-primary mt-3"}
+                                onClick={(e) => {
+                                    setIsAddOpen(false)
+                                    setLoading(true)
+                                    setFileList(null)
+                                }}>Save
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+        )
+    }
+
+    const ModalEditContent = () => {
+
+        return (
+            <Modal
+                isOpen={isEditOpen}
+                contentLabel="File Edit Modal"
+                id={`${title}_edit_modal`}
+                closeOnEscape={true}
+                style={ModalStyle.modalLR}
+            >
+                <div className={"row h-100"}>
+                    <div className={"col col-2"}>
+                        <button className={"btn btn-outline-primary mt-2 mr-2"} onClick={() => {
+                            setIsEditOpen(false);
+                            setSelectedFileIndex(-1);
+                        }}>Close
+                        </button>
+                        <a href="#"
+                           className={"btn btn-outline-success mt-2 mr-2"}
+                           onClick={() => {
+                               handleFileDownload(selectedFileIndex);
+                           }}
+                        >Download</a>
+                    </div>
+                    <div className={"col col-10"}>
+                        <h2>File Content</h2>
+                        <div className={"border border-secondary h-75 p-2 py-2"}>
+                            <FileViewer
+                                fileType={fileList[selectedFileIndex].split('.').pop()}
+                                filePath={`http://127.0.0.1:443/file/${fileList[selectedFileIndex]}`}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </Modal>
+        )
+    }
+
+    const handleFileDownload = (index) => {
+        let fileName = fileList[index];
+        api.get(`/file/${fileName}`, {responseType: 'blob'}).then(res => {
+            console.log(window.URL.createObjectURL(new Blob([res.data])))
+
+            FileDownload(res.data, fileName);
+        }).catch(err => {
+            console.log(err)
+        })
+    }
+
+    const handleFileDelete = (index) => {
+        let fileName = fileList[index];
+        api.delete(`/file/${fileName}`).then(res => {
+            console.log(res)
+            setLoading(true);
+            setFileList(null);
+            setIsAddOpen(false);
+        }).catch(err => {
+            console.log(err)
+        })
+    }
 
     return (
         <div className="form-group row justify-content-center mx-auto my-xl-3 my-lg-3 my-md-2 my-sm-2 my-0">
             <label htmlFor={id}
                    className="col-lg-4 col-md-3 col-sm-3 col-10 col-form-label">{label}{required ? "*" : null}</label>
             <div className="col-lg-8 col-md-9 col-sm-9 col-10">
-                {/*<button type="button" className={"btn btn-light btn-link my-1"} onClick={() => {*/}
-                {/*    setIsAddOpen(true);*/}
-                {/*}}>< PlusCircleIcon*/}
-                {/*    size={16}/></button>*/}
+                <button type="button" className={"btn btn-light btn-link my-1"} onClick={() => {
+                    setIsAddOpen(true);
+                }}>< PlusCircleIcon
+                    size={16}/></button>
                 <div>
-                    {/*<ul className={"list-group"}>*/}
-                    {/*    {fileList ? fileList.map((element, index) => {*/}
-                    {/*        return (*/}
-                    {/*            <li className={"list-group-item p-1"} key={index}>*/}
-                    {/*                <div className={"row"}>*/}
-                    {/*                    <div className={"col col-10 py-0"}>*/}
-                    {/*                        <p className={"m-0 d-inline-block text-truncate"}*/}
-                    {/*                           style={{maxWidth: "100%"}}*/}
-                    {/*                           onClick={(event) => {*/}
-                    {/*                               setSelectedFileIndex(index);*/}
-                    {/*                               setIsEditOpen(true);*/}
-                    {/*                           }}>{element}*/}
-                    {/*                        </p>*/}
-                    {/*                    </div>*/}
-                    {/*                    <div className={"col col-2"}>*/}
-                    {/*                        <a href="#"*/}
-                    {/*                           className={"btn btn-outline-custom border-0 btn-small float-right py-0 px-0"}*/}
-                    {/*                           onClick={(event) => handleFileDelete(index)}*/}
-                    {/*                        ><XIcon size={16}/></a>*/}
-                    {/*                    </div>*/}
-                    {/*                </div>*/}
-                    {/*            </li>*/}
-                    {/*        )*/}
-                    {/*    }) : null}*/}
-                    {/*</ul>*/}
+                    <ul className={"list-group"}>
+                        {fileList ? fileList.map((element, index) => {
+                            return (
+                                <li className={"list-group-item p-1"} key={index}>
+                                    <div className={"row"}>
+                                        <div className={"col col-10 py-0"}>
+                                            <p className={"m-0 d-inline-block text-truncate"}
+                                               style={{maxWidth: "100%"}}
+                                               onClick={(event) => {
+                                                   setSelectedFileIndex(index);
+                                                   setIsEditOpen(true);
+                                               }}>{element}
+                                            </p>
+                                        </div>
+                                        <div className={"col col-2"}>
+                                            <a href="#"
+                                               className={"btn btn-outline-custom border-0 btn-small float-right py-0 px-0"}
+                                               onClick={(event) => handleFileDelete(index)}
+                                            ><XIcon size={16}/></a>
+                                        </div>
+                                    </div>
+                                </li>
+                            )
+                        }) : null}
+                    </ul>
                 </div>
-                {/*<div id={`${title}_add_modal`}>*/}
-                {/*    {isAddOpen ? <ModalAddContent/> : null}*/}
-                {/*</div>*/}
-                {/*<div id={`${title}_edit_modal`}>*/}
-                {/*    {isEditOpen ? <ModalEditContent/> : null}*/}
-                {/*</div>*/}
+                <div id={`${title}_add_modal`}>
+                    {isAddOpen ? <ModalAddContent/> : null}
+                </div>
+                <div id={`${title}_edit_modal`}>
+                    {isEditOpen ? <ModalEditContent/> : null}
+                </div>
             </div>
         </div>
     )
