@@ -5,7 +5,7 @@ import {XIcon} from '@primer/octicons-react'
 import 'bootstrap';
 import style from './style.module.scss';
 // import './style.module.scss';
-import axios from 'axios';
+import api from './helper/api';
 
 /**
  * This is the custom widget for single input field
@@ -375,23 +375,26 @@ export function FileInputWidget(props) {
     let files = [];
 
     const handleChange = () => {
-        console.log("file has been upload, should put in uploads folder");
-        // if (files.length > 0) {
-        //     const data = new FormData();
-        //     files.forEach(file => {
-        //         data.append('file[]', file)
-        //     })
-        //     axios.post("file/upload/", data, {
-        //         headers: {
-        //             'Content-Type': 'multipart/form-data'
-        //         }
-        //     })
-        //         .then(res => {
-        //             console.log(res.data)
-        //         }).catch(err => {
-        //         console.log(err)
-        //     })
-        // }
+        console.log("file has been upload, should put in uploads folder",files);
+        if (files.length > 0) {
+            const data = new FormData();
+            // for (let i = 0; i <files.length; i++){
+            //     data.append('file[]', files[i]);
+            // }
+            files.forEach(file => {
+                console.log("---",file)
+            })
+            // api.post("/file/", data, {
+            //     headers: {
+            //         'Content-Type': 'multipart/form-data'
+            //     }
+            // })
+            //     .then(res => {
+            //         console.log(res.data)
+            //     }).catch(err => {
+            //     console.log(err)
+            // })
+        }
     }
     return (
         <div className={"row"}>

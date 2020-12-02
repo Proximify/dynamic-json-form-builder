@@ -247,30 +247,25 @@ export function CustomArrayFieldTemplate(props) {
  * @returns {JSX.Element}
  * @constructor
  */
+// TODO: url not generic
 export function CustomUploadFieldTemplate(props) {
     console.log("CustomUploadFieldTemplate", props);
     const {id, label, children, description, errors, help, required, title} = props;
 
-    const [isAddOpen, setIsAddOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
     const [isLoading, setLoading] = useState(true);
     const [fileList, setFileList] = useState(null);
-    const [selectedFile, setSelectedFile] = useState(null);
+    const [isAddOpen, setIsAddOpen] = useState(false);
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const [selectedFileIndex, setSelectedFileIndex] = useState(-1);
 
     Modal.setAppElement("#root");
 
     useEffect(() => {
-        // axios.get("https://powerful-brushlands-46492.herokuapp.com/").then(response => {
-        //     console.log(response);
-        //     setLoading(false);
-        //     // setFileList(response.data);
-        //     setFileList("");
-        // });
         api.get("file/").then(res => {
-            console.log("res", res);
+            // console.log("res", res);
             setFileList(res.data.data)
         }).catch(err => {
-            console.log("err", err);
+            // console.log("err", err);
             setFileList(null);
         })
         setLoading(false);
@@ -282,10 +277,10 @@ export function CustomUploadFieldTemplate(props) {
                 <label htmlFor={id}
                        className="col-lg-4 col-md-3 col-sm-3 col-10 col-form-label">{label}{required ? "*" : null}</label>
                 <div className="col-lg-8 col-md-9 col-sm-9 col-10">
-                    <button type="button" className={"btn btn-light btn-link my-1"} onClick={() => {
-                        setIsAddOpen(true);
-                    }}>< PlusCircleIcon
-                        size={16}/></button>
+                    {/*<button type="button" className={"btn btn-light btn-link my-1"} onClick={() => {*/}
+                    {/*    setIsAddOpen(true);*/}
+                    {/*}}>< PlusCircleIcon*/}
+                    {/*    size={16}/></button>*/}
                     <div>Loading...</div>
                 </div>
             </div>
@@ -336,18 +331,18 @@ export function CustomUploadFieldTemplate(props) {
                     <div className={"col col-2"}>
                         <button className={"btn btn-outline-primary mt-2 mr-2"} onClick={() => {
                             setIsEditOpen(false);
-                            setSelectedFile(null);
+                            setSelectedFileIndex(-1);
                         }}>Close
                         </button>
-                        <a href={`../../uploads/${selectedFile}`}
-                           className={"btn btn-outline-success mt-2 mr-2"}>Download</a>
+                        <a href={`http://127.0.0.1:443/file/${fileList[selectedFileIndex]}`}
+                           className={"btn btn-outline-success mt-2 mr-2"} download={fileList[selectedFileIndex]}>Download</a>
                     </div>
                     <div className={"col col-10"}>
                         <h2>File Content</h2>
                         <div className={"border border-secondary h-75 p-2 py-2"}>
                             <FileViewer
-                                fileType={selectedFile.split('.').pop()}
-                                filePath={`../../uploads/${selectedFile}`}
+                                fileType={fileList[selectedFileIndex].split('.').pop()}
+                                filePath={`http://127.0.0.1:443/file/${fileList[selectedFileIndex]}`}
                             /></div>
                     </div>
                 </div>
@@ -355,9 +350,9 @@ export function CustomUploadFieldTemplate(props) {
         )
     }
 
-    const handleFileDelete = (event) => {
+    const handleFileDelete = (index) => {
         // console.log(event.currentTarget)
-        let fileName = event.currentTarget.parentElement.parentElement.firstChild.firstChild.innerHTML;
+        let fileName = fileList[index];
         // axios.delete(`file/delete/${fileName}`).then(res => {
         //     setLoading(true);
         //     setFileList("");
@@ -366,10 +361,14 @@ export function CustomUploadFieldTemplate(props) {
         // }).catch(err => {
         //     console.log(err)
         // })
-        console.log("should delete file nd then get file uploads");
-        setLoading(true);
-        setFileList(null);
-        setIsAddOpen(false);
+        api.delete(`/file/${fileName}`).then(res =>{
+            console.log(res)
+            setLoading(true);
+            setFileList(null);
+            setIsAddOpen(false);
+        }).catch(err=>{
+            console.log(err)
+        })
     }
 
     return (
@@ -391,7 +390,7 @@ export function CustomUploadFieldTemplate(props) {
                                             <p className={"m-0 d-inline-block text-truncate"}
                                                style={{maxWidth: "100%"}}
                                                onClick={(event) => {
-                                                   setSelectedFile(event.currentTarget.innerHTML);
+                                                   setSelectedFileIndex(index);
                                                    setIsEditOpen(true);
                                                }}>{element}
                                             </p>
@@ -399,7 +398,7 @@ export function CustomUploadFieldTemplate(props) {
                                         <div className={"col col-2"}>
                                             <a href="#"
                                                className={"btn btn-outline-custom border-0 btn-small float-right py-0 px-0"}
-                                               onClick={(event) => handleFileDelete(event)}
+                                               onClick={(event) => handleFileDelete(index)}
                                             ><XIcon size={16}/></a>
                                         </div>
                                     </div>
