@@ -378,21 +378,21 @@ export function FileInputWidget(props) {
     const [selectedFiles, setSelectedFiles] = useState(null);
     const [loaded, setLoaded] = useState(0);
 
+    // list allow mime type
+    const types = ['application/pdf',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'image/png', 'image/jpeg', 'image/jpg']
+
     const checkMimeType = (event) => {
         //getting file object
         let files = event.target.files
         //define message container
         let err = []
-        // list allow mime type
-        const types = ['application/pdf', 'text/plain', 'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            ',application/vnd.ms-excel', 'image/png', 'image/jpeg', 'image/jpg']
         // loop access array
         for (let x = 0; x < files.length; x++) {
-            // compare file type find doesn't matach
-            // eslint-disable-next-line no-loop-func
-            if (types.every(type => files[x].type !== type)) {
+            // compare file type find doesn't match
+            if (!types.includes(files[x].type)) {
                 // create error message and assign to container
                 err[x] = files[x].type + ' is not a supported format\n';
             }
@@ -450,9 +450,6 @@ export function FileInputWidget(props) {
         api.post("/file/", data, {
             onUploadProgress: ProgressEvent => {
                 setLoaded(ProgressEvent.loaded / ProgressEvent.total * 100);
-                // this.setState({
-                //     loaded: (ProgressEvent.loaded / ProgressEvent.total*100),
-                // })
             },
         })
             .then(res => { // then print response status
@@ -467,13 +464,14 @@ export function FileInputWidget(props) {
         <div className={"container p-2"}>
             <div className={"row"}>
                 <input className={"py-1"} type="file" name="file" id={`${props.id}_input`}
-                       accept={props.schema.accepts.join(",")} onChange={onChangeHandler} multiple/>
+                       accept={types} onChange={onChangeHandler} multiple/>
                 <a className={"btn btn-primary"} onClick={onClickHandler}>UPLOAD</a>
             </div>
             <div className={"row mt-1"}>
                 <ToastContainer/>
                 <div className={"progress"} style={{width: '50%', height: '10px'}}>
-                    <div className={"progress-bar progress-bar-striped progress-bar-animated"} role={"progressbar"} style={{width: `${loaded}%`}}
+                    <div className={"progress-bar progress-bar-striped progress-bar-animated"} role={"progressbar"}
+                         style={{width: `${loaded}%`}}
                          aria-valuenow={loaded} aria-valuemin="0"
                          aria-valuemax="100">{Number(loaded.toFixed(2))}%
                     </div>
