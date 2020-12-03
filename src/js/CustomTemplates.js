@@ -14,7 +14,6 @@ Modal.setAppElement("#root");
 
 export function CustomHeaderTemplate(props) {
     const {id, label, children, description, errors, help, required} = props;
-    console.log(props)
     return (
         <div className={`form-group row justify-content-center`}>
             <div className="col-lg-12 col-md-12 col-11 my-3">

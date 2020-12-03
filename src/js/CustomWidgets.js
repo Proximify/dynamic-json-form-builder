@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useEffect, useContext, useRef} from "react";
 import Select from "react-select";
 import WindowedSelect from "react-windowed-select";
 import {XIcon} from '@primer/octicons-react'
@@ -7,7 +7,7 @@ import style from './style.module.scss';
 import api from './helper/api';
 import {ToastContainer, toast} from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-// import {Consumer} from './context/language-context';
+import {language, LanguageContext} from './context/language-context';
 
 
 // import './style.module.scss';
@@ -57,121 +57,113 @@ export function TextInputWidget(props) {
 // TODO: refactor use state
 export function MultiLangTextInputWidget(props) {
     console.log("MultiLangTextInputWidget", props);
-    const [deletedContent, setDeletedContent] = useState();
-    let currentLanguage = null;
 
-    const handleChange = (value, newLang) => {
-        if (currentLanguage === newLang)
-            return;
-        setDeletedContent(undefined);
-        if (newLang !== null) {
-            const currentInputValue = props.value ? JSON.parse(props.value) : {language: "", EN: "", FR: ""}
-            // 2 => 1
-            if (currentInputValue.language === "Bilingual") {
-                let newValueObj = null;
-                if (newLang === "FR") {
-                    if (currentInputValue.FR !== "") {
-                        newValueObj = {
-                            language: newLang,
-                            FR: currentInputValue.FR,
-                        }
-                    } else {
-                        newValueObj = {
-                            language: newLang,
-                            FR: currentInputValue.EN,
-                        }
-                    }
-                } else if (newLang === "EN") {
-                    newValueObj = {
-                        language: newLang,
-                        EN: currentInputValue.EN,
-                    }
-                }
-                props.onChange(JSON.stringify(newValueObj));
+    const {value} = props;
+    const {language} = useContext(LanguageContext);
+    const isFirstRun = useRef(true);
+    const isLangFirstRun = useRef(true);
+
+    const [state, setState] = useState({
+        globalLanguage: language.language,
+        isBilingual: false,
+        primaryLanguage: "",
+        secondaryLanguage: "",
+        primaryContent: "",
+        secondaryContent: "",
+        discardedContent: ""
+    });
+
+    useEffect(() => {
+        if (value) {
+            let valueObj = JSON.parse(props.value);
+            if (valueObj.language === "Bilingual") {
+                const primaryLanguage = state.globalLanguage;
+                const secondaryLanguage = primaryLanguage === "EN" ? "FR" : "EN";
+                const primaryContent = valueObj[primaryLanguage];
+                const secondaryContent = valueObj[secondaryLanguage];
+                setState({
+                    ...state,
+                    isBilingual: true,
+                    primaryLanguage: primaryLanguage,
+                    primaryContent: primaryContent,
+                    secondaryLanguage: secondaryLanguage,
+                    secondaryContent: secondaryContent
+                })
             } else {
-                // 1 => 2
-                if (newLang === "Bilingual") {
-                    let newValueObj;
-                    if (value) {
-                        newValueObj = {
-                            language: newLang,
-                            EN: currentInputValue.EN ?? "",
-                            FR: value.content,
-                        }
-                    } else {
-                        newValueObj = {
-                            language: newLang,
-                            EN: currentInputValue.EN ?? "",
-                            FR: currentInputValue.FR ?? "",
-                        }
-                    }
-                    props.onChange(JSON.stringify(newValueObj));
-                }
-                // 1 => 1
-                else {
-                    if (newLang === "EN") {
-                        let newValueObj = {
-                            language: newLang,
-                            EN: currentInputValue.FR ?? ""
-                        }
-                        props.onChange(JSON.stringify(newValueObj));
-                    } else {
-                        let newValueObj = {
-                            language: newLang,
-                            FR: currentInputValue.EN ?? ""
-                        }
-                        props.onChange(JSON.stringify(newValueObj));
-                    }
-                }
+                setState({
+                    ...state,
+                    primaryLanguage: valueObj.language,
+                    primaryContent: valueObj[valueObj.language]
+                })
             }
         } else {
-            if (!value.hasOwnProperty("lang")) {
-                console.warn("value missing lang property");
-                return;
+            setState({...state, primaryLanguage: state.globalLanguage})
+        }
+
+    }, [])
+
+    useEffect(() => {
+        if (isLangFirstRun.current) {
+            isLangFirstRun.current = false;
+            return;
+        }
+        console.log(state)
+        if (!value) {
+            setState({...state, globalLanguage: language.language, primaryLanguage: language.language})
+        } else {
+            if (state.isBilingual) {
+                const primaryLanguage = language.language;
+                const secondaryLanguage = language.language === "EN" ? "FR" : "EN";
+                const primaryContent = state.primaryLanguage !== primaryLanguage ? state.secondaryContent : state.primaryContent;
+                const secondaryContent = state.primaryLanguage !== primaryLanguage ? state.primaryContent : state.secondaryContent;
+                setState({
+                    ...state, globalLanguage: language.language,
+                    primaryLanguage: primaryLanguage,
+                    primaryContent: primaryContent,
+                    secondaryLanguage: secondaryLanguage,
+                    secondaryContent: secondaryContent
+                })
+            }else {
+                setState({
+                    ...state,
+                    globalLanguage: language.language,
+                    primaryLanguage: language.language
+                })
             }
-            const currentInputValue = props.value ? JSON.parse(props.value) : {language: "", EN: "", FR: ""}
-            if (currentInputValue.language === "Bilingual") {
-                if (value.lang === "EN") {
-                    let newValueObj = {
-                        language: currentInputValue.language,
-                        EN: value.content,
-                        FR: currentInputValue.FR ?? "",
-                    }
-                    props.onChange(JSON.stringify(newValueObj));
-                } else {
-                    let newValueObj = {
-                        language: currentInputValue.language,
-                        EN: currentInputValue.EN ?? "",
-                        FR: value.content,
-                    }
-                    props.onChange(JSON.stringify(newValueObj));
+        }
+    }, [language])
+
+    useEffect(() => {
+        if (isFirstRun.current) {
+            isFirstRun.current = false;
+            return;
+        }
+        handleChange();
+    }, [state.isBilingual, state.primaryLanguage, state.secondaryLanguage])
+
+    const handleChange = () => {
+        let newValue;
+        if (state.isBilingual) {
+            newValue = {
+                language: "Bilingual",
+                EN: state.primaryLanguage === "EN" ? state.primaryContent : state.secondaryContent,
+                FR: state.primaryLanguage === "FR" ? state.primaryContent : state.secondaryContent,
+            }
+        } else {
+            if (state.primaryLanguage === "EN") {
+                newValue = {
+                    language: "EN",
+                    EN: state.primaryContent,
                 }
             } else {
-                if (value.lang === "EN") {
-                    let newValueObj = {
-                        language: value.lang,
-                        EN: value.content
-                    }
-                    props.onChange(JSON.stringify(newValueObj));
-                } else {
-                    let newValueObj = {
-                        language: value.lang,
-                        FR: value.content
-                    }
-                    props.onChange(JSON.stringify(newValueObj));
+                newValue = {
+                    language: "FR",
+                    FR: state.primaryContent,
                 }
             }
         }
-    }
-
-    const getValue = () => {
-        if (props.value) {
-            let currentValueObj = JSON.parse(props.value);
-            currentLanguage = currentValueObj.language;
-            return (currentValueObj.language === "Bilingual") ? currentValueObj.EN : (currentValueObj.hasOwnProperty("EN") ? currentValueObj.EN : currentValueObj.FR);
-        } else {
-            currentLanguage = "EN";
-            return "";
+        if (value !== JSON.stringify(newValue)) {
+            props.onChange(JSON.stringify(newValue));
         }
     }
 
@@ -183,12 +175,14 @@ export function MultiLangTextInputWidget(props) {
                     className={"col-lg-12 col-sm-12 form-control"}
                     type="text"
                     id={props.schema.id}
-                    value={getValue()}
+                    value={state.primaryContent}
                     required={props.required}
-                    onChange={(event) => handleChange({
-                        lang: (currentLanguage === "Bilingual") ? "EN" : currentLanguage,
-                        content: event.target.value
-                    }, null)}
+                    onChange={(event) => {
+                        setState({...state, primaryContent: event.target.value})
+                    }}
+                    onBlur={() => {
+                        handleChange()
+                    }}
                 />
                 <div className="input-group-append">
                     <div className="btn-group dropright">
@@ -196,156 +190,202 @@ export function MultiLangTextInputWidget(props) {
                                 className={`btn ${style.btnLanguage} dropdown-toggle p-0`}
                                 data-toggle="dropdown"
                                 aria-haspopup="true" aria-expanded="false"
-                                id={`${props.id}_lang_btn`}>{(currentLanguage === "Bilingual") ? "EN" : currentLanguage}
+                                id={`${props.id}_lang_btn`}>{state.primaryLanguage}
                         </button>
+
                         <div className="dropdown-menu" id={`${props.id}_multi_lang_selection_dropdown`}>
-                            <a className={`dropdown-item ${currentLanguage === "EN" ? "active" : ""}`}
+                            <a className={`dropdown-item ${(state.primaryLanguage === "EN" && !state.isBilingual) ? "active" : ""}`}
                                href="#"
                                onClick={(event) => {
-                                   handleChange(null, "EN");
+                                   if (state.isBilingual) {
+                                       if (state.primaryLanguage === "EN") {
+                                           setState({
+                                               ...state,
+                                               isBilingual: false,
+                                               primaryLanguage: "EN",
+                                               primaryContent: state.primaryContent !== "" ? state.primaryContent : state.secondaryContent,
+                                               secondaryLanguage: "",
+                                               secondaryContent: "",
+                                               discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.secondaryContent : ""
+                                           })
+                                       } else {
+                                           setState({
+                                               ...state,
+                                               isBilingual: false,
+                                               primaryLanguage: "EN",
+                                               primaryContent: state.secondaryContent !== "" ? state.secondaryContent : state.primaryContent,
+                                               secondaryLanguage: "",
+                                               secondaryContent: "",
+                                               discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.primaryContent : ""
+                                           })
+                                       }
+                                   } else {
+                                       if (state.primaryLanguage === "FR") {
+                                           setState({...state, primaryLanguage: "EN"})
+                                       }
+                                   }
                                }}>English only</a>
-                            <a className={`dropdown-item ${currentLanguage === "FR" ? "active" : ""}`}
+                            <a className={`dropdown-item ${(state.primaryLanguage === "FR" && !state.isBilingual) ? "active" : ""}`}
                                href="#"
                                onClick={(event) => {
-                                   handleChange(null, "FR");
+                                   if (state.isBilingual) {
+                                       if (state.primaryLanguage === "FR") {
+                                           setState({
+                                               ...state,
+                                               isBilingual: false,
+                                               primaryLanguage: "FR",
+                                               primaryContent: state.primaryContent !== "" ? state.primaryContent : state.secondaryContent,
+                                               secondaryLanguage: "",
+                                               secondaryContent: "",
+                                               discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.secondaryContent : ""
+                                           })
+                                       } else {
+                                           setState({
+                                               ...state,
+                                               isBilingual: false,
+                                               primaryLanguage: "FR",
+                                               primaryContent: state.secondaryContent !== "" ? state.secondaryContent : state.primaryContent,
+                                               secondaryLanguage: "",
+                                               secondaryContent: "",
+                                               discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.primaryContent : ""
+                                           })
+                                       }
+                                   } else {
+                                       if (state.primaryLanguage === "EN") {
+                                           setState({...state, primaryLanguage: "FR"})
+                                       }
+                                   }
                                }}>French only</a>
                             <div role="separator" className="dropdown-divider"/>
-                            <a className={`dropdown-item ${currentLanguage === "Bilingual" ? "active" : ""}`}
+                            <a className={`dropdown-item ${state.isBilingual ? "active" : ""}`}
                                href="#"
                                onClick={(event) => {
-                                   handleChange(null, "Bilingual");
+                                   if (!state.isBilingual) {
+                                       if (state.primaryLanguage === "EN") {
+                                           if (state.globalLanguage === "EN") {
+                                               setState({
+                                                   ...state,
+                                                   isBilingual: true,
+                                                   secondaryLanguage: "FR",
+                                                   secondaryContent: state.discardedContent,
+                                                   discardedContent: ""
+                                               })
+                                           } else {
+                                               setState({
+                                                   ...state,
+                                                   isBilingual: true,
+                                                   primaryLanguage: "FR",
+                                                   primaryContent: state.discardedContent,
+                                                   secondaryLanguage: "EN",
+                                                   secondaryContent: state.primaryContent,
+                                                   discardedContent: ""
+                                               })
+                                           }
+                                       } else {
+                                           if (state.globalLanguage === "FR") {
+                                               setState({
+                                                   ...state,
+                                                   isBilingual: true,
+                                                   secondaryLanguage: "EN",
+                                                   secondaryContent: state.discardedContent,
+                                                   discardedContent: ""
+                                               })
+                                           } else {
+                                               setState({
+                                                   ...state,
+                                                   isBilingual: true,
+                                                   primaryLanguage: "EN",
+                                                   primaryContent: state.discardedContent,
+                                                   secondaryLanguage: "FR",
+                                                   secondaryContent: state.primaryContent,
+                                                   discardedContent: ""
+                                               })
+                                           }
+                                       }
+                                   }
                                }}>Bilingual</a>
                         </div>
                     </div>
                 </div>
             </div>
             <div
-                className={`my-auto text-center input-group pt-1 ${(!props.value || JSON.parse(props.value).language !== "Bilingual") ? "d-none" : ""}`}>
+                className={`my-auto text-center input-group pt-1 ${!state.isBilingual ? "d-none" : ""}`}>
                 <input
                     className={`col-lg-12 col-sm-12 form-control`}
                     type="text"
-                    value={props.value ? (JSON.parse(props.value).FR ?? "") : ""}
-                    onChange={(event) => handleChange({lang: "Bilingual", content: event.target.value}, null)}
+                    value={state.secondaryContent}
+                    onChange={(event) => {
+                        setState({...state, secondaryContent: event.target.value})
+                    }}
+                    onBlur={() => {
+                        handleChange()
+                    }}
                 />
                 <div className={`input-group-append`}>
                     <button type="button"
                             className={`btn ${style.btnLanguage} p-0 pl-1"`}
                             onClick={(event) => {
-                                const temp = event.currentTarget.parentElement.parentElement.firstChild.value;
-                                //console.log(event.currentTarget.parentElement.parentElement.firstChild.value);
-                                handleChange(null, "EN");
-                                setDeletedContent(temp);
-                            }}>FR<XIcon verticalAlign='middle' size={13}/>
+                                setState({
+                                    ...state,
+                                    isBilingual: false,
+                                    secondaryLanguage: "",
+                                    secondaryContent: "",
+                                    discardedContent: state.secondaryContent
+                                })
+                            }}>{state.secondaryLanguage}<XIcon verticalAlign='middle' size={13}/>
                     </button>
                 </div>
             </div>
             <div>
-                <a className={`btn ${style.btnUndo} ${!deletedContent ? "d-none" : ""}`}
+                <a className={`btn ${style.btnUndo} ${!state.discardedContent ? "d-none" : ""}`}
                    onClick={() => {
-                       handleChange({content: deletedContent}, "Bilingual");
+                       if (state.primaryLanguage === "EN") {
+                           if (state.globalLanguage === "EN") {
+                               setState({
+                                   ...state,
+                                   isBilingual: true,
+                                   secondaryLanguage: "FR",
+                                   secondaryContent: state.discardedContent,
+                                   discardedContent: ""
+                               })
+                           } else {
+                               setState({
+                                   ...state,
+                                   isBilingual: true,
+                                   primaryLanguage: "FR",
+                                   primaryContent: state.discardedContent,
+                                   secondaryLanguage: "EN",
+                                   secondaryContent: state.primaryContent,
+                                   discardedContent: ""
+                               })
+                           }
+                       } else {
+                           if (state.globalLanguage === "FR") {
+                               setState({
+                                   ...state,
+                                   isBilingual: true,
+                                   secondaryLanguage: "EN",
+                                   secondaryContent: state.discardedContent,
+                                   discardedContent: ""
+                               })
+                           } else {
+                               setState({
+                                   ...state,
+                                   isBilingual: true,
+                                   primaryLanguage: "EN",
+                                   primaryContent: state.discardedContent,
+                                   secondaryLanguage: "FR",
+                                   secondaryContent: state.primaryContent,
+                                   discardedContent: ""
+                               })
+                           }
+                       }
                    }}>undo</a>
             </div>
         </div>
     );
-
-
-    // const [value] = props;
-    //
-    // const [state, setState] = useState({
-    //     primaryLanguage: null,
-    //     secondaryLanguage: null,
-    //     primaryContent: null,
-    //     secondaryContent: null
-    // });
-    //
-    // const getValue = () => {
-    //     if (value) {
-    //         let contentObj = JSON.parse(props.value);
-    //         currentLanguage = currentValueObj.language;
-    //         return (currentValueObj.language === "Bilingual") ? currentValueObj.EN : (currentValueObj.hasOwnProperty("EN") ? currentValueObj.EN : currentValueObj.FR);
-    //     } else {
-    //         return "";
-    //     }
-    // }
-    //
-    // return (
-    //     <div id={`${props.id}_multi_lang_input_group`}>
-    //         <div className="my-auto text-center input-group">
-    //
-    //             <input
-    //                 className={"col-lg-12 col-sm-12 form-control"}
-    //                 type="text"
-    //                 id={props.schema.id}
-    //                 value={getValue()}
-    //                 required={props.required}
-    //                 onChange={(event) => handleChange({
-    //                     lang: (currentLanguage === "Bilingual") ? "EN" : currentLanguage,
-    //                     content: event.target.value
-    //                 }, null)}
-    //             />
-    //             <div className="input-group-append">
-    //                 <div className="btn-group dropright">
-    //                     <Consumer>{
-    //                         ({globalLanguage}) => <button type="button"
-    //                                                       className={`btn ${style.btnLanguage} dropdown-toggle p-0`}
-    //                                                       data-toggle="dropdown"
-    //                                                       aria-haspopup="true" aria-expanded="false"
-    //                                                       id={`${props.id}_lang_btn`}>{(currentLanguage === "Bilingual") ? "EN" : currentLanguage}
-    //                         </button>
-    //                     }</Consumer>
-    //
-    //                     <div className="dropdown-menu" id={`${props.id}_multi_lang_selection_dropdown`}>
-    //                         <a className={`dropdown-item ${currentLanguage === "EN" ? "active" : ""}`}
-    //                            href="#"
-    //                            onClick={(event) => {
-    //                                handleChange(null, "EN");
-    //                            }}>English only</a>
-    //                         <a className={`dropdown-item ${currentLanguage === "FR" ? "active" : ""}`}
-    //                            href="#"
-    //                            onClick={(event) => {
-    //                                handleChange(null, "FR");
-    //                            }}>French only</a>
-    //                         <div role="separator" className="dropdown-divider"/>
-    //                         <a className={`dropdown-item ${currentLanguage === "Bilingual" ? "active" : ""}`}
-    //                            href="#"
-    //                            onClick={(event) => {
-    //                                handleChange(null, "Bilingual");
-    //                            }}>Bilingual</a>
-    //                     </div>
-    //                 </div>
-    //             </div>
-    //         </div>
-    //         <div
-    //             className={`my-auto text-center input-group pt-1 ${(!props.value || JSON.parse(props.value).language !== "Bilingual") ? "d-none" : ""}`}>
-    //             <input
-    //                 className={`col-lg-12 col-sm-12 form-control`}
-    //                 type="text"
-    //                 value={props.value ? (JSON.parse(props.value).FR ?? "") : ""}
-    //                 onChange={(event) => handleChange({lang: "Bilingual", content: event.target.value}, null)}
-    //             />
-    //             <div className={`input-group-append`}>
-    //                 <button type="button"
-    //                         className={`btn ${style.btnLanguage} p-0 pl-1"`}
-    //                         onClick={(event) => {
-    //                             const temp = event.currentTarget.parentElement.parentElement.firstChild.value;
-    //                             //console.log(event.currentTarget.parentElement.parentElement.firstChild.value);
-    //                             handleChange(null, "EN");
-    //                             setDeletedContent(temp);
-    //                         }}>FR<XIcon verticalAlign='middle' size={13}/>
-    //                 </button>
-    //             </div>
-    //         </div>
-    //         <div>
-    //             <a className={`btn ${style.btnUndo} ${!deletedContent ? "d-none" : ""}`}
-    //                onClick={() => {
-    //                    handleChange({content: deletedContent}, "Bilingual");
-    //                }}>undo</a>
-    //         </div>
-    //     </div>
-    // );
-
-
 }
+
 
 /**
  * This is the custom widget for single select field that use React-Select

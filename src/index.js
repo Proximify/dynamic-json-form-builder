@@ -5,7 +5,6 @@ import LanguageTogglerButton from './js/component/language-toggle-btn';
 import 'bootstrap/dist/css/bootstrap.css';
 import Form from './js/component/formComponent'
 
-
 class App extends Component {
     constructor(props) {
         super(props);
