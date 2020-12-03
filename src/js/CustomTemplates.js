@@ -7,7 +7,7 @@ import FileViewer from 'react-file-viewer';
 import ModalStyle from './helper/ModalStyles.json'
 import api from './helper/api';
 import FileDownload from 'js-file-download';
-import { Consumer } from './helper/context';
+// import { Consumer } from './context/language-context';
 
 
 Modal.setAppElement("#root");
@@ -18,10 +18,10 @@ export function CustomHeaderTemplate(props) {
     return (
         <div className={`form-group row justify-content-center`}>
             <div className="col-lg-12 col-md-12 col-11 my-3">
-                <Consumer>{
-                    ({globalLanguage}) => <h5>Global Language: {globalLanguage}</h5>
-                }
-                </Consumer>
+                {/*<Consumer>{*/}
+                {/*    ({globalLanguage}) => <h5>Global Language: {globalLanguage}</h5>*/}
+                {/*}*/}
+                {/*</Consumer>*/}
                 {children}
             </div>
         </div>

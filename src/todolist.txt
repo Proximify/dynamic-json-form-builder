@@ -1,0 +1,10 @@
+
+    // disable
+    // patch or put this.props.max item count
+    // primary and secondary field
+    // field order
+    // max char count , nullable?
+    //     read only? richtext?
+    //         autofill
+    //         dropdown filter depends on other field
+    // valid on blur

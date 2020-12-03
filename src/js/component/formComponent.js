@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import Form from "@rjsf/core";
 import 'bootstrap/dist/css/bootstrap.css';
+import {language, LanguageContext} from "../context/language-context";
 import api from '../helper/api';
 
 import {
@@ -19,7 +20,7 @@ import {
     testArrayFieldTemplate
 } from "../CustomTemplates";
 import generateUISchema from "../helper/UISchemaGenerator";
-import formValidatorGenerator from '../helper/FormValidatorGenerator';
+import formValidatorGenerator from '../helper/formValidatorGenerator';
 
 const customWidgets = {
     multiColSelectorWidget: MultiColSelectorWidget,
@@ -209,10 +210,17 @@ class FormComponent extends Component {
                                 <div className={"container"}>
                                     <div id={`${FormID}-errorMsg`}>
                                     </div>
-                                    <div>
-                                        <button className={"btn btn-info"} type="submit">Submit</button>
-                                        <button className={"btn btn-secondary"} type="button">Cancel</button>
-                                    </div>
+
+                                    <LanguageContext.Consumer>
+                                        {({language, toggleLanguage}) => (
+                                            <div>
+                                                <button className={"btn btn-info"} style={{backgroundColor: language.submitBtnColor}} type="submit">Submit</button>
+                                                <button className={"btn btn-secondary ml-3"} style={{backgroundColor: language.cancelBtnColor}} type="button">Cancel
+                                                </button>
+                                            </div>
+                                        )}
+                                    </LanguageContext.Consumer>
+
                                 </div>
                             </Form>
                         </div>

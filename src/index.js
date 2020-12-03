@@ -1,26 +1,28 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
-import {Provider} from './js/helper/context';
+import {language, LanguageContext} from './js/context/language-context';
+import LanguageTogglerButton from './js/component/language-toggle-btn';
 import 'bootstrap/dist/css/bootstrap.css';
 import Form from './js/component/formComponent'
 
-const context = {globalLanguage: 'EN'};
 
 class App extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
-    }
 
-    // disable
-    // patch or put this.props.max item count
-    // primary and secondary field
-    // field order
-    // max char count , nullable?
-    //     read only? richtext?
-    //         autofill
-    //         dropdown filter depends on other field
-    // valid on blur
+        this.toggleLanguage = () => {
+            this.setState(state => ({
+                language:state.language === language.EN
+                    ? language.FR
+                    : language.EN,
+            }));
+        };
+
+        this.state = {
+            language: language.EN,
+            toggleLanguage: this.toggleLanguage
+        };
+    }
 
     validationMethods = {
         requiredField: (value) => {
@@ -47,14 +49,15 @@ class App extends Component {
 
     render() {
         return (
-            <Provider value={context}>
+            <LanguageContext.Provider value={this.state}>
+                <LanguageTogglerButton />
                 <Form
                     formID={"user-profile-form"}
                     resourceURL={"form/"}
                     validationDeclaration={this.validationDeclaration}
                     HTTPMethod={"PATCH"}
                 />
-            </Provider>
+            </LanguageContext.Provider>
         );
     }
 }
