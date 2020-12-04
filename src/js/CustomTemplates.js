@@ -56,7 +56,6 @@ export function CustomFieldTemplate(props) {
  * @returns {JSX.Element}
  * @constructor
  */
-// TODO: need refactor delete and add
 export function CustomArrayFieldTemplate(props) {
     const {title, items, canAdd, onAddClick, help, required, formData} = props;
     const [isOpen, setIsOpen] = useState(false);

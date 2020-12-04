@@ -8,7 +8,7 @@ function LanguageTogglerButton() {
                 <button
                     onClick={toggleLanguage}
                     style={{backgroundColor: language.color}}>
-                    Toggle Language: {language.language}
+                    Change Language: {language.language}
                 </button>
             )}
         </LanguageContext.Consumer>

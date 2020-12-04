@@ -214,9 +214,8 @@ class FormComponent extends Component {
                                     <LanguageContext.Consumer>
                                         {({language}) => (
                                             <div>
-                                                <button className={"btn btn-info"} style={{backgroundColor: language.submitBtnColor}} type="submit">Submit</button>
-                                                <button className={"btn btn-secondary ml-3"} style={{backgroundColor: language.cancelBtnColor}} type="button">Cancel
-                                                </button>
+                                                <button className={"btn btn-info"} style={{backgroundColor: language.submitBtnColor}} type="submit">{language.submitBtnContent}</button>
+                                                <button className={"btn btn-secondary ml-3"} style={{backgroundColor: language.cancelBtnColor}} type="button">{language.cancelBtnContent}</button>
                                             </div>
                                         )}
                                     </LanguageContext.Consumer>

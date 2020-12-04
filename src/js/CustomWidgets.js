@@ -54,7 +54,6 @@ export function TextInputWidget(props) {
  * @returns {JSX.Element}
  * @constructor
  */
-// TODO: refactor use state
 export function MultiLangTextInputWidget(props) {
     console.log("MultiLangTextInputWidget", props);
 
@@ -99,7 +98,6 @@ export function MultiLangTextInputWidget(props) {
         } else {
             setState({...state, primaryLanguage: state.globalLanguage})
         }
-
     }, [])
 
     useEffect(() => {
@@ -107,7 +105,6 @@ export function MultiLangTextInputWidget(props) {
             isLangFirstRun.current = false;
             return;
         }
-        console.log(state)
         if (!value) {
             setState({...state, globalLanguage: language.language, primaryLanguage: language.language})
         } else {
@@ -123,7 +120,7 @@ export function MultiLangTextInputWidget(props) {
                     secondaryLanguage: secondaryLanguage,
                     secondaryContent: secondaryContent
                 })
-            }else {
+            } else {
                 setState({
                     ...state,
                     globalLanguage: language.language,
@@ -167,10 +164,54 @@ export function MultiLangTextInputWidget(props) {
         }
     }
 
+    const handleLangChange = () => {
+        // handle language change from 1 to 2
+        if (state.primaryLanguage === "EN") {
+            if (state.globalLanguage === "EN") {
+                setState({
+                    ...state,
+                    isBilingual: true,
+                    secondaryLanguage: "FR",
+                    secondaryContent: state.discardedContent,
+                    discardedContent: ""
+                })
+            } else {
+                setState({
+                    ...state,
+                    isBilingual: true,
+                    primaryLanguage: "FR",
+                    primaryContent: state.discardedContent,
+                    secondaryLanguage: "EN",
+                    secondaryContent: state.primaryContent,
+                    discardedContent: ""
+                })
+            }
+        } else {
+            if (state.globalLanguage === "FR") {
+                setState({
+                    ...state,
+                    isBilingual: true,
+                    secondaryLanguage: "EN",
+                    secondaryContent: state.discardedContent,
+                    discardedContent: ""
+                })
+            } else {
+                setState({
+                    ...state,
+                    isBilingual: true,
+                    primaryLanguage: "EN",
+                    primaryContent: state.discardedContent,
+                    secondaryLanguage: "FR",
+                    secondaryContent: state.primaryContent,
+                    discardedContent: ""
+                })
+            }
+        }
+    }
+
     return (
         <div id={`${props.id}_multi_lang_input_group`}>
             <div className="my-auto text-center input-group">
-
                 <input
                     className={"col-lg-12 col-sm-12 form-control"}
                     type="text"
@@ -261,47 +302,7 @@ export function MultiLangTextInputWidget(props) {
                                href="#"
                                onClick={(event) => {
                                    if (!state.isBilingual) {
-                                       if (state.primaryLanguage === "EN") {
-                                           if (state.globalLanguage === "EN") {
-                                               setState({
-                                                   ...state,
-                                                   isBilingual: true,
-                                                   secondaryLanguage: "FR",
-                                                   secondaryContent: state.discardedContent,
-                                                   discardedContent: ""
-                                               })
-                                           } else {
-                                               setState({
-                                                   ...state,
-                                                   isBilingual: true,
-                                                   primaryLanguage: "FR",
-                                                   primaryContent: state.discardedContent,
-                                                   secondaryLanguage: "EN",
-                                                   secondaryContent: state.primaryContent,
-                                                   discardedContent: ""
-                                               })
-                                           }
-                                       } else {
-                                           if (state.globalLanguage === "FR") {
-                                               setState({
-                                                   ...state,
-                                                   isBilingual: true,
-                                                   secondaryLanguage: "EN",
-                                                   secondaryContent: state.discardedContent,
-                                                   discardedContent: ""
-                                               })
-                                           } else {
-                                               setState({
-                                                   ...state,
-                                                   isBilingual: true,
-                                                   primaryLanguage: "EN",
-                                                   primaryContent: state.discardedContent,
-                                                   secondaryLanguage: "FR",
-                                                   secondaryContent: state.primaryContent,
-                                                   discardedContent: ""
-                                               })
-                                           }
-                                       }
+                                       handleLangChange()
                                    }
                                }}>Bilingual</a>
                         </div>
@@ -339,48 +340,8 @@ export function MultiLangTextInputWidget(props) {
             <div>
                 <a className={`btn ${style.btnUndo} ${!state.discardedContent ? "d-none" : ""}`}
                    onClick={() => {
-                       if (state.primaryLanguage === "EN") {
-                           if (state.globalLanguage === "EN") {
-                               setState({
-                                   ...state,
-                                   isBilingual: true,
-                                   secondaryLanguage: "FR",
-                                   secondaryContent: state.discardedContent,
-                                   discardedContent: ""
-                               })
-                           } else {
-                               setState({
-                                   ...state,
-                                   isBilingual: true,
-                                   primaryLanguage: "FR",
-                                   primaryContent: state.discardedContent,
-                                   secondaryLanguage: "EN",
-                                   secondaryContent: state.primaryContent,
-                                   discardedContent: ""
-                               })
-                           }
-                       } else {
-                           if (state.globalLanguage === "FR") {
-                               setState({
-                                   ...state,
-                                   isBilingual: true,
-                                   secondaryLanguage: "EN",
-                                   secondaryContent: state.discardedContent,
-                                   discardedContent: ""
-                               })
-                           } else {
-                               setState({
-                                   ...state,
-                                   isBilingual: true,
-                                   primaryLanguage: "EN",
-                                   primaryContent: state.discardedContent,
-                                   secondaryLanguage: "FR",
-                                   secondaryContent: state.primaryContent,
-                                   discardedContent: ""
-                               })
-                           }
-                       }
-                   }}>undo</a>
+                       handleLangChange()
+                   }}>{language.language === "EN"? "undo" : "restaurer"}</a>
             </div>
         </div>
     );

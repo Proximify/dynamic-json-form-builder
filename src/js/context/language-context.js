@@ -5,13 +5,17 @@ export const language = {
         language: 'EN',
         color: '#EF689F',
         submitBtnColor: '#e01b6b',
-        cancelBtnColor: '#F5AECB'
+        submitBtnContent: 'Submit',
+        cancelBtnColor: '#F5AECB',
+        cancelBtnContent: 'Cancel'
     },
     FR: {
         language: 'FR',
         color: '#7BAAF8',
         submitBtnColor: '#3498DB',
-        cancelBtnColor: '#7FB3D5'
+        submitBtnContent: 'Soumettre',
+        cancelBtnColor: '#7FB3D5',
+        cancelBtnContent: 'Annuler'
     }
 }
 
