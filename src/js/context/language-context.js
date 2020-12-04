@@ -16,6 +16,14 @@ export const language = {
         submitBtnContent: 'Soumettre',
         cancelBtnColor: '#7FB3D5',
         cancelBtnContent: 'Annuler'
+    },
+    SP: {
+        language: 'SP',
+        color: '#4d9f3c',
+        submitBtnColor: '#1d9402',
+        submitBtnContent: 'Enviar',
+        cancelBtnColor: '#78a26f',
+        cancelBtnContent: 'Cancelar'
     }
 }
 

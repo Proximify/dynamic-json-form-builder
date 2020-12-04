@@ -9,16 +9,17 @@ class App extends Component {
     constructor(props) {
         super(props);
 
-        this.toggleLanguage = () => {
-            this.setState(state => ({
-                language:state.language === language.EN
-                    ? language.FR
-                    : language.EN,
-            }));
+        this.toggleLanguage = (value) => {
+            console.log(language[value])
+            this.setState({
+                language: language[value]
+            });
+            document.documentElement.lang = language[value].language.toLowerCase();
         };
 
         this.state = {
             language: language.EN,
+            pageLanguages: ["EN","FR","SP"],
             toggleLanguage: this.toggleLanguage
         };
     }
@@ -46,15 +47,18 @@ class App extends Component {
         age: this.validationMethods["customFieldLessThan100"]
     }
 
+
     render() {
         return (
             <LanguageContext.Provider value={this.state}>
-                <LanguageTogglerButton />
+                <LanguageTogglerButton pageLanguages={this.state.pageLanguages} />
                 <Form
                     formID={"user-profile-form"}
                     resourceURL={"form/"}
                     validationDeclaration={this.validationDeclaration}
                     HTTPMethod={"PATCH"}
+                    onPageLangInit={this.onPageLangInit}
+                    isReady={this.state.isReady}
                 />
             </LanguageContext.Provider>
         );

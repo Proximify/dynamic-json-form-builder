@@ -6,11 +6,11 @@ import api from '../helper/api';
 
 import {
     MultiColSelectorWidget,
-    MultiLangTextInputWidget,
+    // MultiLangTextInputWidget,
     SingleSelectWidget,
     TextInputWidget,
     WindowedSelectorWidget,
-    FileInputWidget
+    FileInputWidget,
 } from "../CustomWidgets";
 import {
     CustomHeaderTemplate,
@@ -21,6 +21,7 @@ import {
 } from "../CustomTemplates";
 import generateUISchema from "../helper/UISchemaGenerator";
 import formValidatorGenerator from '../helper/formValidatorGenerator';
+import {MultiLangTextInputWidget} from '../MultiLangTextInputWidget'
 
 const customWidgets = {
     multiColSelectorWidget: MultiColSelectorWidget,
@@ -109,7 +110,7 @@ class FormComponent extends Component {
             FormData: undefined,
             FormID: null,
             validation: null,
-            HTTPMethod: null,
+            HTTPMethod: null
         };
     }
 
@@ -127,6 +128,7 @@ class FormComponent extends Component {
         } else {
             api.get(this.props.resourceURL).then(res => {
                 const validationDeclaration = this.props.validationDeclaration;
+
                 this.setState({
                     isLoaded: true,
                     FormSchema: res.data.formSchema,
@@ -136,7 +138,7 @@ class FormComponent extends Component {
                         formValidatorGenerator(res.data.formSchema, formData, errors, validationDeclaration);
                         return errors;
                     },
-                    HTTPMethod: this.props.HTTPMethod
+                    HTTPMethod: this.props.HTTPMethod,
                 })
             }).catch(err => {
                 this.setState({
@@ -156,6 +158,7 @@ class FormComponent extends Component {
         //document.getElementById(`${this.props.FormID}-errorMsg`).innerHTML = "";
         this.onErrorMsgChange(null);
 
+        console.log("submitting")
         api[this.state.HTTPMethod.toLowerCase()](this.props.resourceURL + 'submit', data)
             .then(res => {
                 console.log(res);
@@ -184,6 +187,7 @@ class FormComponent extends Component {
     }
 
     render() {
+        console.log("form render", this.state.FormData)
         const {isLoaded, loadingError, FormSchema, FormData, FormID, validation} = this.state;
         if (loadingError) {
             return <h3>Loading Error: {loadingError}</h3>;
@@ -214,8 +218,12 @@ class FormComponent extends Component {
                                     <LanguageContext.Consumer>
                                         {({language}) => (
                                             <div>
-                                                <button className={"btn btn-info"} style={{backgroundColor: language.submitBtnColor}} type="submit">{language.submitBtnContent}</button>
-                                                <button className={"btn btn-secondary ml-3"} style={{backgroundColor: language.cancelBtnColor}} type="button">{language.cancelBtnContent}</button>
+                                                <button className={"btn btn-info"}
+                                                        style={{backgroundColor: language.submitBtnColor}}
+                                                        type="submit">{language.submitBtnContent}</button>
+                                                <button className={"btn btn-secondary ml-3"}
+                                                        style={{backgroundColor: language.cancelBtnColor}}
+                                                        type="button">{language.cancelBtnContent}</button>
                                             </div>
                                         )}
                                     </LanguageContext.Consumer>
