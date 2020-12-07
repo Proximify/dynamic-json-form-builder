@@ -50,6 +50,7 @@ class App extends Component {
 
     render() {
         return (
+
             <LanguageContext.Provider value={this.state}>
                 <LanguageTogglerButton pageLanguages={this.state.pageLanguages} />
                 <Form

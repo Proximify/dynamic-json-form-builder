@@ -187,7 +187,6 @@ class FormComponent extends Component {
     }
 
     render() {
-        console.log("form render", this.state.FormData)
         const {isLoaded, loadingError, FormSchema, FormData, FormID, validation} = this.state;
         if (loadingError) {
             return <h3>Loading Error: {loadingError}</h3>;
@@ -206,6 +205,7 @@ class FormComponent extends Component {
                                 widgets={customWidgets}
                                 showErrorList={false}
                                 liveValidate
+                                onChange={()=>{console.log("data changed")}}
                                 validate={validation}
                                 onError={(errors) => {
                                     this.onErrorMsgChange(errors);

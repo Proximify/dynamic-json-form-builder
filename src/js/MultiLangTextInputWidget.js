@@ -28,15 +28,22 @@ export function MultiLangTextInputWidget(props) {
         languageList: []
     });
 
+    const languageLabel = {
+        EN: "English",
+        FR: "French",
+        SP: "Spanish"
+    }
+
     useEffect(() => {
         if (value) {
             let valueObj = JSON.parse(props.value);
             const languageList = props.registry.rootSchema["fieldLanguages"].map(lang => lang.toUpperCase()) ?? [document.documentElement.lang.toUpperCase()];
             if (valueObj.language === "Bilingual" && languageList.length === 2) {
-                const primaryLanguage = document.documentElement.lang.toUpperCase();
+                const htmlPageLang = document.documentElement.lang;
+                const primaryLanguage = languageList.includes(htmlPageLang.toUpperCase()) ? htmlPageLang.toUpperCase() : languageList[0];
                 const secondaryLanguage = primaryLanguage === languageList[0] ? languageList[1] : languageList[0];
-                const primaryContent = valueObj[primaryLanguage];
-                const secondaryContent = valueObj[secondaryLanguage];
+                const primaryContent = valueObj.hasOwnProperty(primaryLanguage) ? valueObj[primaryLanguage] : "";
+                const secondaryContent = valueObj.hasOwnProperty(secondaryLanguage) ?valueObj[secondaryLanguage] : "";
                 setState({
                     ...state,
                     isBilingual: true,
@@ -79,8 +86,18 @@ export function MultiLangTextInputWidget(props) {
                     secondaryLanguage: secondaryLanguage,
                     secondaryContent: secondaryContent
                 })
+            } else {
+                if (!state.isBilingual && (!state.primaryContent || state.primaryContent === "")) {
+                    setState({
+                        ...state,
+                        primaryLanguage: document.documentElement.lang.toUpperCase()
+                    })
+                }
             }
         }
+
+        handleChange()
+
     }, [language])
 
     useEffect(() => {
@@ -96,20 +113,13 @@ export function MultiLangTextInputWidget(props) {
         if (state.isBilingual) {
             newValue = {
                 language: "Bilingual",
-                EN: state.primaryLanguage === "EN" ? state.primaryContent : state.secondaryContent,
-                FR: state.primaryLanguage === "FR" ? state.primaryContent : state.secondaryContent,
+                [state.languageList[0]]: state.primaryLanguage === state.languageList[0] ? state.primaryContent : state.secondaryContent,
+                [state.languageList[1]]: state.primaryLanguage === state.languageList[1] ? state.primaryContent : state.secondaryContent,
             }
         } else {
-            if (state.primaryLanguage === "EN") {
-                newValue = {
-                    language: "EN",
-                    EN: state.primaryContent,
-                }
-            } else {
-                newValue = {
-                    language: "FR",
-                    FR: state.primaryContent,
-                }
+            newValue = {
+                language: state.primaryLanguage,
+                [state.primaryLanguage]: state.primaryContent
             }
         }
         if (value !== JSON.stringify(newValue)) {
@@ -141,49 +151,6 @@ export function MultiLangTextInputWidget(props) {
                 discardedContent: ""
             })
         }
-
-
-        // if (state.primaryLanguage === "EN") {
-        //     if (document.documentElement.lang.toUpperCase() === "EN") {
-        //         setState({
-        //             ...state,
-        //             isBilingual: true,
-        //             secondaryLanguage: "FR",
-        //             secondaryContent: state.discardedContent,
-        //             discardedContent: ""
-        //         })
-        //     } else {
-        //         setState({
-        //             ...state,
-        //             isBilingual: true,
-        //             primaryLanguage: "FR",
-        //             primaryContent: state.discardedContent,
-        //             secondaryLanguage: "EN",
-        //             secondaryContent: state.primaryContent,
-        //             discardedContent: ""
-        //         })
-        //     }
-        // } else {
-        //     if (document.documentElement.lang.toUpperCase() === "FR") {
-        //         setState({
-        //             ...state,
-        //             isBilingual: true,
-        //             secondaryLanguage: "EN",
-        //             secondaryContent: state.discardedContent,
-        //             discardedContent: ""
-        //         })
-        //     } else {
-        //         setState({
-        //             ...state,
-        //             isBilingual: true,
-        //             primaryLanguage: "EN",
-        //             primaryContent: state.discardedContent,
-        //             secondaryLanguage: "FR",
-        //             secondaryContent: state.primaryContent,
-        //             discardedContent: ""
-        //         })
-        //     }
-        // }
     }
 
     return (
@@ -218,7 +185,7 @@ export function MultiLangTextInputWidget(props) {
                                        href="#"
                                        onClick={() => {
                                            if (state.isBilingual) {
-                                               if (state.primaryLanguage === lang){
+                                               if (state.primaryLanguage === lang) {
                                                    setState({
                                                        ...state,
                                                        isBilingual: false,
@@ -227,7 +194,7 @@ export function MultiLangTextInputWidget(props) {
                                                        secondaryContent: "",
                                                        discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.secondaryContent : ""
                                                    })
-                                               }else {
+                                               } else {
                                                    setState({
                                                        ...state,
                                                        isBilingual: false,
@@ -244,7 +211,7 @@ export function MultiLangTextInputWidget(props) {
                                                    setState({...state, primaryLanguage: lang})
                                                }
                                            }
-                                       }}>{lang} Only</a>
+                                       }}>{languageLabel[lang]} Only</a>
                                 )
                             })}
                             {state.languageList.length === 2 ?
@@ -257,78 +224,6 @@ export function MultiLangTextInputWidget(props) {
                                    }}>Bilingual</a>
                                 : null
                             }
-
-
-                            {/*<a className={`dropdown-item ${(state.primaryLanguage === "EN" && !state.isBilingual) ? "active" : ""}`}*/}
-                            {/*   href="#"*/}
-                            {/*   onClick={(event) => {*/}
-                            {/*       if (state.isBilingual) {*/}
-                            {/*           if (state.primaryLanguage === "EN") {*/}
-                            {/*               setState({*/}
-                            {/*                   ...state,*/}
-                            {/*                   isBilingual: false,*/}
-                            {/*                   primaryLanguage: "EN",*/}
-                            {/*                   primaryContent: state.primaryContent !== "" ? state.primaryContent : state.secondaryContent,*/}
-                            {/*                   secondaryLanguage: "",*/}
-                            {/*                   secondaryContent: "",*/}
-                            {/*                   discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.secondaryContent : ""*/}
-                            {/*               })*/}
-                            {/*           } else {*/}
-                            {/*               setState({*/}
-                            {/*                   ...state,*/}
-                            {/*                   isBilingual: false,*/}
-                            {/*                   primaryLanguage: "EN",*/}
-                            {/*                   primaryContent: state.secondaryContent !== "" ? state.secondaryContent : state.primaryContent,*/}
-                            {/*                   secondaryLanguage: "",*/}
-                            {/*                   secondaryContent: "",*/}
-                            {/*                   discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.primaryContent : ""*/}
-                            {/*               })*/}
-                            {/*           }*/}
-                            {/*       } else {*/}
-                            {/*           if (state.primaryLanguage === "FR") {*/}
-                            {/*               setState({...state, primaryLanguage: "EN"})*/}
-                            {/*           }*/}
-                            {/*       }*/}
-                            {/*   }}>English only</a>*/}
-                            {/*<a className={`dropdown-item ${(state.primaryLanguage === "FR" && !state.isBilingual) ? "active" : ""}`}*/}
-                            {/*   href="#"*/}
-                            {/*   onClick={(event) => {*/}
-                            {/*       if (state.isBilingual) {*/}
-                            {/*           if (state.primaryLanguage === "FR") {*/}
-                            {/*               setState({*/}
-                            {/*                   ...state,*/}
-                            {/*                   isBilingual: false,*/}
-                            {/*                   primaryLanguage: "FR",*/}
-                            {/*                   primaryContent: state.primaryContent !== "" ? state.primaryContent : state.secondaryContent,*/}
-                            {/*                   secondaryLanguage: "",*/}
-                            {/*                   secondaryContent: "",*/}
-                            {/*                   discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.secondaryContent : ""*/}
-                            {/*               })*/}
-                            {/*           } else {*/}
-                            {/*               setState({*/}
-                            {/*                   ...state,*/}
-                            {/*                   isBilingual: false,*/}
-                            {/*                   primaryLanguage: "FR",*/}
-                            {/*                   primaryContent: state.secondaryContent !== "" ? state.secondaryContent : state.primaryContent,*/}
-                            {/*                   secondaryLanguage: "",*/}
-                            {/*                   secondaryContent: "",*/}
-                            {/*                   discardedContent: (state.primaryContent !== "" && state.secondaryContent !== "") ? state.primaryContent : ""*/}
-                            {/*               })*/}
-                            {/*           }*/}
-                            {/*       } else {*/}
-                            {/*           if (state.primaryLanguage === "EN") {*/}
-                            {/*               setState({...state, primaryLanguage: "FR"})*/}
-                            {/*           }*/}
-                            {/*       }*/}
-                            {/*   }}>French only</a>*/}
-                            {/*<div role="separator" className="dropdown-divider"/>*/}
-                            {/*<a className={`dropdown-item ${state.isBilingual ? "active" : ""}`}*/}
-                            {/*   href="#"*/}
-                            {/*   onClick={(event) => {*/}
-                            {/*       if (!state.isBilingual) {*/}
-                            {/*           handleLangChange()*/}
-                            {/*       }*/}
-                            {/*   }}>Bilingual</a>*/}
                         </div>
                     </div>
                 </div>
