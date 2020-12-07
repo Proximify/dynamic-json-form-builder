@@ -1,7 +1,0 @@
-
-    // disable
-    // field order
-    // max char count , nullable?
-    //     read only? richtext?
-    //         autofill
-    //         dropdown filter depends on other field
