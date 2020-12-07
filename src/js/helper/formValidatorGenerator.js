@@ -1,8 +1,4 @@
 export default function formValidatorGenerator(formSchema, formData, errors, validationDeclaration) {
-    // console.log(formSchema)
-    // console.log(formData)
-    // console.log(errors)
-    // console.log(validationRules)
     if (!validationDeclaration){
         return;
     }

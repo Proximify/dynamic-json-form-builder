@@ -4,6 +4,8 @@ import {language, LanguageContext} from './js/context/language-context';
 import LanguageTogglerButton from './js/component/language-toggle-btn';
 import 'bootstrap/dist/css/bootstrap.css';
 import Form from './js/component/formComponent'
+import api from "./js/helper/api";
+import style from "./js/style.module.scss";
 
 class App extends Component {
     constructor(props) {
@@ -19,7 +21,7 @@ class App extends Component {
 
         this.state = {
             language: language.EN,
-            pageLanguages: ["EN","FR","SP"],
+            pageLanguages: ["EN", "FR", "SP"],
             toggleLanguage: this.toggleLanguage
         };
     }
@@ -47,19 +49,20 @@ class App extends Component {
         age: this.validationMethods["customFieldLessThan100"]
     }
 
-
     render() {
         return (
-
             <LanguageContext.Provider value={this.state}>
-                <LanguageTogglerButton pageLanguages={this.state.pageLanguages} />
+                <LanguageTogglerButton pageLanguages={this.state.pageLanguages}/>
                 <Form
                     formID={"user-profile-form"}
                     resourceURL={"form/"}
                     validationDeclaration={this.validationDeclaration}
                     HTTPMethod={"PATCH"}
-                    onPageLangInit={this.onPageLangInit}
-                    isReady={this.state.isReady}
+                    formContext={{
+                        api: api,
+                        globalContext: {language,LanguageContext},
+                        style: style
+                    }}
                 />
             </LanguageContext.Provider>
         );

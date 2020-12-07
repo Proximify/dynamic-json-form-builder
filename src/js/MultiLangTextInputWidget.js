@@ -1,7 +1,5 @@
 import React, {useContext, useEffect, useRef, useState} from "react";
 import 'bootstrap';
-import {language, LanguageContext} from './context/language-context';
-import style from "./style.module.scss";
 import {XIcon} from "@primer/octicons-react";
 
 /**
@@ -14,7 +12,8 @@ export function MultiLangTextInputWidget(props) {
     console.log("MultiLangTextInputWidget", props);
 
     const {value} = props;
-    const {language} = useContext(LanguageContext);
+    const {language} = useContext(props.formContext.globalContext.LanguageContext);
+    const style = props.formContext.style;
     const isFirstRun = useRef(true);
     const isLangFirstRun = useRef(true);
 

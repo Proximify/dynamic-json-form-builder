@@ -2,30 +2,11 @@ import React, {useEffect, useState} from 'react';
 import 'bootstrap/dist/css/bootstrap.css';
 import {PlusCircleIcon, PencilIcon, XIcon} from '@primer/octicons-react'
 import Modal from 'react-modal';
-import style from './style.module.scss';
 import FileViewer from 'react-file-viewer';
 import ModalStyle from './helper/ModalStyles.json'
-import api from './helper/api';
 import FileDownload from 'js-file-download';
-// import { Consumer } from './context/language-context';
-
 
 Modal.setAppElement("#root");
-
-export function CustomHeaderTemplate(props) {
-    const {id, label, children, description, errors, help, required} = props;
-    return (
-        <div className={`form-group row justify-content-center`}>
-            <div className="col-lg-12 col-md-12 col-11 my-3">
-                {/*<Consumer>{*/}
-                {/*    ({globalLanguage}) => <h5>Global Language: {globalLanguage}</h5>*/}
-                {/*}*/}
-                {/*</Consumer>*/}
-                {children}
-            </div>
-        </div>
-    );
-}
 
 /**
  * This is the custom template for single input or selection field
@@ -35,6 +16,7 @@ export function CustomHeaderTemplate(props) {
  */
 export function CustomFieldTemplate(props) {
     const {id, label, children, description, errors, help, required, rawErrors} = props;
+    const style = props.formContext.style;
     console.log("CustomFieldTemplate", props);
     return (
         <div className="form-group row justify-content-center mx-auto my-xl-3 my-lg-3 my-md-2 my-sm-2 my-0">
@@ -223,7 +205,7 @@ export function CustomUploadFieldTemplate(props) {
 
     useEffect(() => {
         const getFileList = () => {
-            api.get("file/").then(res => {
+            props.formContext.api.get("file/").then(res => {
                 const files = res.data.data;
                 setState({...state, isLoading: false, fileList: files})
             }).catch(err => {
@@ -318,7 +300,7 @@ export function CustomUploadFieldTemplate(props) {
 
     const handleFileDownload = (index) => {
         let fileName = state.fileList[index];
-        api.get(`/file/${fileName}`, {responseType: 'blob'}).then(res => {
+        props.formContext.api.get(`/file/${fileName}`, {responseType: 'blob'}).then(res => {
             console.log(window.URL.createObjectURL(new Blob([res.data])))
 
             FileDownload(res.data, fileName);
@@ -329,7 +311,7 @@ export function CustomUploadFieldTemplate(props) {
 
     const handleFileDelete = (index) => {
         let fileName = state.fileList[index];
-        api.delete(`/file/${fileName}`).then(res => {
+        props.formContext.api.delete(`/file/${fileName}`).then(res => {
             setState({...state, isLoading: true, fileList: null});
         }).catch(err => {
             console.log(err)
@@ -355,7 +337,11 @@ export function CustomUploadFieldTemplate(props) {
                                             <p className={"m-0 d-inline-block text-truncate"}
                                                style={{maxWidth: "100%"}}
                                                onClick={(event) => {
-                                                   setState({...state, selectFileIndex: index, isPreviewModalOpen: true});
+                                                   setState({
+                                                       ...state,
+                                                       selectFileIndex: index,
+                                                       isPreviewModalOpen: true
+                                                   });
                                                }}>{element}
                                             </p>
                                         </div>
@@ -382,5 +368,5 @@ export function CustomUploadFieldTemplate(props) {
     )
 }
 
-export default CustomHeaderTemplate;
+export default CustomFieldTemplate;
 

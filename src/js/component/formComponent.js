@@ -1,23 +1,19 @@
 import React, {Component} from 'react';
 import Form from "@rjsf/core";
 import 'bootstrap/dist/css/bootstrap.css';
-import {language, LanguageContext} from "../context/language-context";
-import api from '../helper/api';
+import _ from 'lodash';
 
 import {
     MultiColSelectorWidget,
-    // MultiLangTextInputWidget,
     SingleSelectWidget,
     TextInputWidget,
     WindowedSelectorWidget,
     FileInputWidget,
 } from "../CustomWidgets";
 import {
-    CustomHeaderTemplate,
     CustomFieldTemplate,
     CustomArrayFieldTemplate,
-    CustomUploadFieldTemplate,
-    testArrayFieldTemplate
+    CustomUploadFieldTemplate
 } from "../CustomTemplates";
 import generateUISchema from "../helper/UISchemaGenerator";
 import formValidatorGenerator from '../helper/formValidatorGenerator';
@@ -33,7 +29,6 @@ const customWidgets = {
 };
 
 const customTemplates = {
-    headerTemplate: CustomHeaderTemplate,
     fieldTemplate: CustomFieldTemplate,
     arrayFieldTemplate: CustomArrayFieldTemplate,
     uploadFieldTemplate: CustomUploadFieldTemplate
@@ -43,7 +38,6 @@ const customTemplates = {
  * This is a sample UI schema
  */
 const uiSchema = {
-    "ui:FieldTemplate": customTemplates["headerTemplate"],
     "name": {
         "ui:FieldTemplate": customTemplates["fieldTemplate"],
         "ui:widget": "textWidget"
@@ -80,7 +74,6 @@ const uiSchema = {
     },
     "education": {
         "ui:ArrayFieldTemplate": customTemplates["arrayFieldTemplate"],
-        // "ui:ArrayFieldTemplate":testArrayFieldTemplate,
         "items": {
             "degree": {
                 "ui:FieldTemplate": customTemplates["fieldTemplate"],
@@ -108,6 +101,7 @@ class FormComponent extends Component {
             loadingError: null,
             FormSchema: null,
             FormData: undefined,
+            FormContext: this.props.formContext,
             FormID: null,
             validation: null,
             HTTPMethod: null
@@ -125,10 +119,14 @@ class FormComponent extends Component {
                 isLoaded: true,
                 loadingError: `No/Invalid HTTP method provided, expect 'POST','PUT','PATCH', given: ${this.props.HTTPMethod ?? "nothing"}`
             })
+        } else if (!this.props.formContext.hasOwnProperty('api')) {
+            this.setState({
+                isLoaded: true,
+                loadingError: `No API/Base URL provided`
+            })
         } else {
-            api.get(this.props.resourceURL).then(res => {
+            this.state.FormContext.api.get(this.props.resourceURL).then(res => {
                 const validationDeclaration = this.props.validationDeclaration;
-
                 this.setState({
                     isLoaded: true,
                     FormSchema: res.data.formSchema,
@@ -155,11 +153,11 @@ class FormComponent extends Component {
      */
     onFormSubmit = (data) => {
         console.log(data);
-        //document.getElementById(`${this.props.FormID}-errorMsg`).innerHTML = "";
         this.onErrorMsgChange(null);
 
-        console.log("submitting")
-        api[this.state.HTTPMethod.toLowerCase()](this.props.resourceURL + 'submit', data)
+        console.log("submitting");
+
+        this.state.FormContext.api[this.state.HTTPMethod.toLowerCase()](this.props.resourceURL + 'submit', data)
             .then(res => {
                 console.log(res);
             }).catch(err => {
@@ -187,12 +185,15 @@ class FormComponent extends Component {
     }
 
     render() {
-        const {isLoaded, loadingError, FormSchema, FormData, FormID, validation} = this.state;
+        const {isLoaded, loadingError, FormSchema, FormData, FormContext, FormID, validation} = this.state;
+        const globalContext = FormContext.globalContext ?? null;
+
         if (loadingError) {
             return <h3>Loading Error: {loadingError}</h3>;
         } else if (!isLoaded) {
             return <div>Loading...</div>;
         } else {
+            console.log(_.isEqual(generateUISchema(FormSchema),uiSchema));
             return (
                 <div className={"container"}>
                     <div className={"row d-flex justify-content-center"}>
@@ -200,12 +201,17 @@ class FormComponent extends Component {
                             <Form
                                 id={FormID}
                                 schema={FormSchema}
-                                uiSchema={uiSchema}
+                                uiSchema={generateUISchema(FormSchema)}
                                 formData={FormData}
+                                formContext={
+                                    this.props.formContext ?? null
+                                }
                                 widgets={customWidgets}
                                 showErrorList={false}
                                 liveValidate
-                                onChange={()=>{console.log("data changed")}}
+                                onChange={() => {
+                                    console.log("data changed")
+                                }}
                                 validate={validation}
                                 onError={(errors) => {
                                     this.onErrorMsgChange(errors);
@@ -214,22 +220,34 @@ class FormComponent extends Component {
                                 <div className={"container"}>
                                     <div id={`${FormID}-errorMsg`}>
                                     </div>
-
-                                    <LanguageContext.Consumer>
-                                        {({language}) => (
-                                            <div>
-                                                <button className={"btn btn-info"}
-                                                        style={{backgroundColor: language.submitBtnColor}}
-                                                        type="submit">{language.submitBtnContent}</button>
-                                                <button className={"btn btn-secondary ml-3"}
-                                                        style={{backgroundColor: language.cancelBtnColor}}
-                                                        type="button">{language.cancelBtnContent}</button>
-                                            </div>
-                                        )}
-                                    </LanguageContext.Consumer>
+                                    {(globalContext && globalContext.hasOwnProperty("LanguageContext")) ?
+                                        <globalContext.LanguageContext.Consumer>
+                                            {({language}) => (
+                                                <div>
+                                                    <button className={"btn btn-info"}
+                                                            style={
+                                                                {backgroundColor: language.submitBtnColor}}
+                                                            type="submit">{language.submitBtnContent}
+                                                    </button>
+                                                    <button className={"btn btn-secondary ml-3"}
+                                                            style={{backgroundColor: language.cancelBtnColor}}
+                                                            type="button">{language.cancelBtnContent}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </globalContext.LanguageContext.Consumer>
+                                        : <div>
+                                            <button className={"btn btn-info"}
+                                                    type="submit">Submit
+                                            </button>
+                                            <button className={"btn btn-secondary ml-3"}
+                                                    type="button">Cancel
+                                            </button>
+                                        </div>}
 
                                 </div>
                             </Form>
+
                         </div>
                     </div>
                 </div>
