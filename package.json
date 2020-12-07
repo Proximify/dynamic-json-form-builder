@@ -1,7 +1,6 @@
 {
   "name": "dynamic-json-form-builder",
   "version": "0.1.0",
-  "private": true,
   "dependencies": {
     "@rjsf/core": "^2.4.0",
     "@testing-library/jest-dom": "^5.11.4",
