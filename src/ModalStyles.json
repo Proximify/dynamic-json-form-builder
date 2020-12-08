@@ -1,5 +1,5 @@
 {
-  "modalLR": {
+  "ModalFilePreview": {
     "overlay": {
       "position": "fixed",
       "top": 0,
@@ -23,7 +23,7 @@
       "padding": "20px"
     }
   },
-  "modalSM": {
+  "modalArrayFieldContent": {
     "overlay": {
       "position": "fixed",
       "top": 0,
@@ -47,7 +47,7 @@
       "padding": "20px"
     }
   },
-  "modalXS": {
+  "modalFileUpload": {
     "overlay": {
       "position": "fixed",
       "top": 0,

@@ -1,4 +1,4 @@
-import {language, LanguageContext} from '../context/language-context';
+import {language, LanguageContext} from './language-context';
 import React from "react";
 import 'bootstrap'
 

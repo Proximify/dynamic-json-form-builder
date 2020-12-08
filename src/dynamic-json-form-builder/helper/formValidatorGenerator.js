@@ -2,7 +2,6 @@ export default function formValidatorGenerator(formSchema, formData, errors, val
     if (!validationDeclaration){
         return;
     }
-    // TODO nested field
     Object.keys(errors).forEach(field => {
         if (field !== "__errors" && field !== "addError") {
             if (validationDeclaration.hasOwnProperty(field)) {

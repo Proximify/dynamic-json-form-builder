@@ -3,7 +3,6 @@ import 'bootstrap/dist/css/bootstrap.css';
 import {PlusCircleIcon, PencilIcon, XIcon} from '@primer/octicons-react'
 import Modal from 'react-modal';
 import FileViewer from 'react-file-viewer';
-import ModalStyle from './helper/ModalStyles.json'
 import FileDownload from 'js-file-download';
 
 Modal.setAppElement("#root");
@@ -17,7 +16,7 @@ Modal.setAppElement("#root");
 export function CustomFieldTemplate(props) {
     const {id, label, children, description, errors, help, required, rawErrors} = props;
     const style = props.formContext.style;
-    console.log("CustomFieldTemplate", props);
+    // console.log("CustomFieldTemplate", props);
     return (
         <div className="form-group row justify-content-center mx-auto my-xl-3 my-lg-3 my-md-2 my-sm-2 my-0">
             <label htmlFor={id}
@@ -92,7 +91,7 @@ export function CustomArrayFieldTemplate(props) {
             listItem.push(html);
             if (Object.keys(element).length === 0) {
                 const newItemBtnEle = document.getElementById(`${title}_modal_item_edit_btn_${i}`);
-                console.log(isOpen, itemIndex, i, isAddNew)
+                // console.log(isOpen, itemIndex, i, isAddNew)
                 if (newItemBtnEle && !isOpen && itemIndex !== i) {
                     setIsOpen(true);
                     setItemIndex(i);
@@ -120,13 +119,13 @@ export function CustomArrayFieldTemplate(props) {
      * @returns {JSX.Element}
      * @constructor
      */
-    const ModalContent = () => {
+    const ModalArrayFieldContent = (props) => {
         return (
             <Modal
                 isOpen={isOpen}
                 contentLabel={`${title} Modal`}
                 id={`${title}_modal_${itemIndex}`}
-                style={ModalStyle.modalSM}
+                style={props.modalStyle.modalArrayFieldContent ?? undefined}
             >
                 <div className={"pt-3"}>
                     {items[itemIndex].children}
@@ -173,7 +172,7 @@ export function CustomArrayFieldTemplate(props) {
                     </ul>
                 </div>
                 <div id={`${title}_modal`}>
-                    {isOpen ? <ModalContent/> : null}
+                    {isOpen ? <ModalArrayFieldContent modalStyle={props.formContext.modalStyle}/> : null}
                 </div>
             </div>
         </div>
@@ -190,9 +189,8 @@ export function CustomArrayFieldTemplate(props) {
  * @returns {JSX.Element}
  * @constructor
  */
-// TODO: url not generic
 export function CustomUploadFieldTemplate(props) {
-    console.log("CustomUploadFieldTemplate", props);
+    // console.log("CustomUploadFieldTemplate", props);
     const {id, label, children, required, title} = props;
 
     const [state, setState] = useState({
@@ -235,13 +233,13 @@ export function CustomUploadFieldTemplate(props) {
         );
     }
 
-    const ModalAddContent = () => {
+    const ModalFileUpload = (props) => {
         return (
             <Modal
                 isOpen={state.isUploadModalOpen}
                 contentLabel="File Add Modal"
                 id={`${title}_add_modal`}
-                style={ModalStyle.modalXS}
+                style={props.modalStyle.modalFileUpload ?? undefined}
             >
                 <div className={"container"}>
                     {children}
@@ -262,14 +260,14 @@ export function CustomUploadFieldTemplate(props) {
         )
     }
 
-    const ModalEditContent = () => {
+    const ModalFilePreview = (props) => {
         return (
             <Modal
                 isOpen={state.isPreviewModalOpen}
                 contentLabel="File Edit Modal"
                 id={`${title}_edit_modal`}
                 closeOnEscape={true}
-                style={ModalStyle.modalLR}
+                style={props.modalStyle.ModalFilePreview ?? undefined}
             >
                 <div className={"row h-100"}>
                     <div className={"col col-2"}>
@@ -358,10 +356,10 @@ export function CustomUploadFieldTemplate(props) {
                     </ul>
                 </div>
                 <div id={`${title}_add_modal`}>
-                    {state.isUploadModalOpen ? <ModalAddContent/> : null}
+                    {state.isUploadModalOpen ? <ModalFileUpload modalStyle={props.formContext.modalStyle}/> : null}
                 </div>
                 <div id={`${title}_edit_modal`}>
-                    {state.isPreviewModalOpen ? <ModalEditContent/> : null}
+                    {state.isPreviewModalOpen ? <ModalFilePreview modalStyle={props.formContext.modalStyle}/> : null}
                 </div>
             </div>
         </div>

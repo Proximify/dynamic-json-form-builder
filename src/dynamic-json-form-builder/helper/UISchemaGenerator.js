@@ -1,4 +1,4 @@
-import {CustomFieldTemplate, CustomArrayFieldTemplate, CustomUploadFieldTemplate} from "../CustomTemplates";
+import {CustomFieldTemplate, CustomArrayFieldTemplate, CustomUploadFieldTemplate} from "../templates/CustomTemplates";
 
 const customTemplates = {
     fieldTemplate: CustomFieldTemplate,
@@ -124,11 +124,11 @@ const generateUISchemaRecursively = (schemaObj) => {
  */
 const customTemplatesConverter = (UISchemaObj) => {
     Object.keys(UISchemaObj).forEach((key) => {
-        if (UISchemaObj[key].hasOwnProperty("items")){
+        if (UISchemaObj[key].hasOwnProperty("items")) {
             Object.keys(UISchemaObj[key]["items"]).forEach((subKey) => {
                 if (UISchemaObj[key]["items"][subKey].hasOwnProperty("ui:FieldTemplate")) {
                     UISchemaObj[key]["items"][subKey]['ui:FieldTemplate'] = customTemplates[UISchemaObj[key]["items"][subKey]['ui:FieldTemplate']];
-                }else if(UISchemaObj[key]["items"][subKey].hasOwnProperty("ui:ArrayFieldTemplate")){
+                } else if (UISchemaObj[key]["items"][subKey].hasOwnProperty("ui:ArrayFieldTemplate")) {
                     console.log(customTemplates[UISchemaObj[key]["items"][subKey]['ui:ArrayFieldTemplate']]);
                     UISchemaObj[key]["items"][subKey]['ui:ArrayFieldTemplate'] = customTemplates[UISchemaObj[key]["items"][subKey]['ui:ArrayFieldTemplate']];
                 }
@@ -136,7 +136,7 @@ const customTemplatesConverter = (UISchemaObj) => {
         }
         if (UISchemaObj[key].hasOwnProperty("ui:FieldTemplate")) {
             UISchemaObj[key]['ui:FieldTemplate'] = customTemplates[UISchemaObj[key]['ui:FieldTemplate']];
-        }else if(UISchemaObj[key].hasOwnProperty("ui:ArrayFieldTemplate")){
+        } else if (UISchemaObj[key].hasOwnProperty("ui:ArrayFieldTemplate")) {
             UISchemaObj[key]['ui:ArrayFieldTemplate'] = customTemplates[UISchemaObj[key]['ui:ArrayFieldTemplate']];
         }
     })

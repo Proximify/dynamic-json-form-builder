@@ -12,7 +12,7 @@ import 'react-toastify/dist/ReactToastify.css';
  * @constructor
  */
 export function TextInputWidget(props) {
-    console.log("TextInputWidget", props);
+    // console.log("TextInputWidget", props);
     const [value, setValue] = useState(props.value);
     return (
         <div className="my-auto">
@@ -117,7 +117,7 @@ export function WindowedSelectorWidget(props) {
  * @constructor
  */
 export function MultiColSelectorWidget(props) {
-    console.log("MultiColSelectorWidget", props);
+    // console.log("MultiColSelectorWidget", props);
     const {options, onChange, value} = props;
     const enumItems = options.enumOptions;
 
@@ -166,7 +166,7 @@ export function MultiColSelectorWidget(props) {
  * @constructor
  */
 export function FileInputWidget(props) {
-    console.log("FileInputWidget", props);
+    // console.log("FileInputWidget", props);
     const [selectedFiles, setSelectedFiles] = useState(null);
     const [loaded, setLoaded] = useState(0);
 

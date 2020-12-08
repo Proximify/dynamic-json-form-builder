@@ -9,7 +9,7 @@ import {XIcon} from "@primer/octicons-react";
  * @constructor
  // */
 export function MultiLangTextInputWidget(props) {
-    console.log("MultiLangTextInputWidget", props);
+    // console.log("MultiLangTextInputWidget", props);
 
     const {value} = props;
     const {language} = useContext(props.formContext.globalContext.LanguageContext);
@@ -37,7 +37,6 @@ export function MultiLangTextInputWidget(props) {
         if (value) {
             let valueObj = JSON.parse(props.value);
             const languageList = props.registry.rootSchema["fieldLanguages"].map(lang => lang.toUpperCase()) ?? [document.documentElement.lang.toUpperCase()];
-            console.log(languageList);
             if (valueObj.language === "Bilingual" && languageList.length === 2) {
                 const htmlPageLang = document.documentElement.lang;
                 const primaryLanguage = languageList.includes(htmlPageLang.toUpperCase()) ? htmlPageLang.toUpperCase() : languageList[0];

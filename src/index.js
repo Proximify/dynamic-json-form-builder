@@ -1,11 +1,12 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
-import {language, LanguageContext} from './js/context/language-context';
-import LanguageTogglerButton from './js/component/language-toggle-btn';
+import {language, LanguageContext} from './language-context';
+import LanguageTogglerButton from './language-toggle-btn';
 import 'bootstrap/dist/css/bootstrap.css';
-import Form from './js/component/formComponent'
-import api from "./js/helper/api";
-import style from "./js/style.module.scss";
+import Form from './dynamic-json-form-builder';
+import ModalStyle from  './ModalStyles.json';
+import api from "./api";
+import style from "./style.module.scss";
 
 class App extends Component {
     constructor(props) {
@@ -61,7 +62,8 @@ class App extends Component {
                     formContext={{
                         api: api,
                         globalContext: {language,LanguageContext},
-                        style: style
+                        style: style,
+                        modalStyle: ModalStyle
                     }}
                 />
             </LanguageContext.Provider>

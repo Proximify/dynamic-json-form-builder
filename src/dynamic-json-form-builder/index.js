@@ -9,15 +9,15 @@ import {
     TextInputWidget,
     WindowedSelectorWidget,
     FileInputWidget,
-} from "../CustomWidgets";
+} from "./widgets/CustomWidgets";
 import {
     CustomFieldTemplate,
     CustomArrayFieldTemplate,
     CustomUploadFieldTemplate
-} from "../CustomTemplates";
-import generateUISchema from "../helper/UISchemaGenerator";
-import formValidatorGenerator from '../helper/formValidatorGenerator';
-import {MultiLangTextInputWidget} from '../MultiLangTextInputWidget'
+} from "./templates/CustomTemplates";
+import generateUISchema from "./helper/UISchemaGenerator";
+import formValidatorGenerator from './helper/formValidatorGenerator';
+import {MultiLangTextInputWidget} from './widgets/MultiLangTextInputWidget'
 
 const customWidgets = {
     multiColSelectorWidget: MultiColSelectorWidget,
@@ -93,7 +93,7 @@ const uiSchema = {
     }
 };
 
-class FormComponent extends Component {
+class Index extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -256,4 +256,4 @@ class FormComponent extends Component {
     }
 }
 
-export default FormComponent;
+export default Index;
