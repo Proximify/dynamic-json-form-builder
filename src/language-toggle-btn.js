@@ -1,6 +1,5 @@
 import {language, LanguageContext} from './language-context';
 import React from "react";
-import 'bootstrap'
 
 function LanguageTogglerButton(props) {
     const languages = {
