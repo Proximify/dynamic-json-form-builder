@@ -2,6 +2,8 @@
 
 This is a React Component that can generate Form based on JSON Schema definition.
 
+This repository contains the React front-end that use `dynamic-json-form-builder` library and a Node.js `simple-server` back-end.
+
 ## Getting Started
 
 ### Installation
