@@ -27,3 +27,6 @@ yarn-error.log*
 .eslintcache
 /public/uploads
 /dynamic-json-form-builder/
+/simpleServer/node_modules/
+/simpleServer/server/uploads/*
+!/simpleServer/server/uploads/.gitignore
