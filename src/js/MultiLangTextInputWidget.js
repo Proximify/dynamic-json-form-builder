@@ -37,6 +37,7 @@ export function MultiLangTextInputWidget(props) {
         if (value) {
             let valueObj = JSON.parse(props.value);
             const languageList = props.registry.rootSchema["fieldLanguages"].map(lang => lang.toUpperCase()) ?? [document.documentElement.lang.toUpperCase()];
+            console.log(languageList);
             if (valueObj.language === "Bilingual" && languageList.length === 2) {
                 const htmlPageLang = document.documentElement.lang;
                 const primaryLanguage = languageList.includes(htmlPageLang.toUpperCase()) ? htmlPageLang.toUpperCase() : languageList[0];
@@ -61,7 +62,8 @@ export function MultiLangTextInputWidget(props) {
                 })
             }
         } else {
-            setState({...state, primaryLanguage: document.documentElement.lang.toUpperCase()})
+            const languageList = props.registry.rootSchema["fieldLanguages"].map(lang => lang.toUpperCase()) ?? [document.documentElement.lang.toUpperCase()];
+            setState({...state, primaryLanguage: document.documentElement.lang.toUpperCase(),languageList: languageList})
         }
     }, [])
 
@@ -71,7 +73,20 @@ export function MultiLangTextInputWidget(props) {
             return;
         }
         if (!value) {
-            setState({...state, primaryLanguage: document.documentElement.lang.toUpperCase()})
+            if (state.isBilingual){
+                if (state.languageList.includes(document.documentElement.lang.toUpperCase())){
+                    const primaryLanguage = document.documentElement.lang.toUpperCase();
+                    const secondaryLanguage = primaryLanguage === state.languageList[0] ? state.languageList[1] : state.languageList[0];
+                    setState({
+                        ...state,
+                        primaryLanguage: primaryLanguage,
+                        secondaryLanguage: secondaryLanguage
+                    })
+                }
+            }else {
+                if (state.languageList.includes(document.documentElement.lang.toUpperCase()))
+                    setState({...state, primaryLanguage: document.documentElement.lang.toUpperCase()})
+            }
         } else if (state.languageList.includes(document.documentElement.lang.toUpperCase())) {
             if (state.isBilingual && state.languageList.length === 2) {
                 const primaryLanguage = document.documentElement.lang.toUpperCase();
